@@ -18,10 +18,10 @@ include "config.php";
 <h1> TV stations received by <?php echo "$user in $city, $state"; ?></h1>
 </h1>
 <script src="time.js" type="text/javascript"></script>
-<img src="TV/green_dot.png" width='15' height='15' />Strong signal
-<img src="TV/yellow_dot.png" width='15' height='15' />Medium signal
-<img src="TV/red_dot.png" width='15' height='15' />Weak signal
-<img src="TV/black_dot.png" width='15' height='15' />Detected in last 48 hours, but not currently<br>
+<img src="green_dot.png" width='15' height='15' />Strong signal
+<img src="yellow_dot.png" width='15' height='15' />Medium signal
+<img src="red_dot.png" width='15' height='15' />Weak signal
+<img src="black_dot.png" width='15' height='15' />Detected in last 48 hours, but not currently<br>
 Zoom in for more stations.  Click a call sign for more details.
 This page updates every five minutes.
 <ul id="options">
