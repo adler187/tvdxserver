@@ -7,16 +7,16 @@ include "config.php";
 <!-- I'm not a web-whiz! -KB8U -->
 <head>
 <title>Stations received by <?php echo $user; ?></title>
-<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=<?php echo $key; ?>" type="text/javascript"></script>
-<script src="map_data.js" type="text/javascript"></script>
-<script src="labeled_marker.js" type="text/javascript"></script>
-<script src="map_functions.js" type="text/javascript"></script>
-<link href="style.css" rel="stylesheet" type="text/css" />
+	<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;key=<?php echo $key; ?>" type="text/javascript"></script>
+	<script src="map_data.js" type="text/javascript"></script>
+	<script src="labeled_marker.js" type="text/javascript"></script>
+	<script src="map_functions.js" type="text/javascript"></script>
+	<link href="style.css" rel="stylesheet" type="text/css" />
 </head>
+
 <body class="sidebar-right">
 <div id="toolbar">
 <h1> TV stations received by <?php echo "$user in $city, $state"; ?></h1>
-</h1>
 <script src="time.js" type="text/javascript"></script>
 <img src="green_dot.png" width='15' height='15' />Strong signal
 <img src="yellow_dot.png" width='15' height='15' />Medium signal
