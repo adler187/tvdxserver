@@ -1,0 +1,38 @@
+You'll need to edit scan.pl and change lines for:
+use lib "/home/rjd/silicon_dust/development";
+set path to the directory where you place dist.pm
+$CONFIG_PROG set to path to hdhomerun_config
+$TUNER_ID set to your tuner's ID or FFFFFFFF as appropriate
+$TUNER to the tuner on your SiliconDust that you want to scan
+$TUNER_LAT and $TUNER_LON to your location latitude and longitude.
+$WEGT to the path to wget.  Hopefully the options will be the same.
+$CACHE_FILE to some file.  I think the file has to exist so touch it before
+running scan.pl
+$CRICKET_RAW_DIR to a directory you'll need to create first.  Files are
+created here by scan.pl
+$CRICKET_CONFIG to the config directory where cricket was installed.
+$LAST_SEEN_DIR to a directory you'll need to create first.  Files are
+created here by scan.pl
+$JS_DATA change path to for map_data.js to where it will be served up by apache
+change line with cricket-compile to your path to cricket-compile
+
+optional for scan.pl:
+change $this_scan_file to a directory where all the output from hdhomerun_config
+will be placed.  Uncomment any line with SCAN_FILE (open, print, close). This
+may be useful for debugging.  The two units I have had slightly different
+output form the SCANNING lines so I had to change the regexp line for it so
+that VHF channels would be caught.
+
+Other files:
+Place Defaults file in $CRICKET_CONFIG and edit Defaults file
+lines starting with ds-source.  Change file paths to what $CRICKET_RAW_DIR
+is set to
+
+cp TV/* to the same path as used in $JS_DATA
+
+edit index.html:
+Change <title> to what's you'd like
+Change google.com key
+Change <h1> TV stations received at.. to what you'd like
+Change <img src= line to your URL for the *_dot.png files
+Change cricket URL to your cricket URL
