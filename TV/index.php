@@ -11,22 +11,20 @@ include "config.php";
 	<script src="map_data.js" type="text/javascript"></script>
 	<script src="labeled_marker.js" type="text/javascript"></script>
 	<script src="map_functions.js" type="text/javascript"></script>
+	<script src="time.js" type="text/javascript"></script>
 	<link href="style.css" rel="stylesheet" type="text/css" />
 </head>
 
 <body class="sidebar-right">
 <div id="toolbar">
-<h1> TV stations received by <?php echo "$user in $city, $state"; ?></h1>
-<script src="time.js" type="text/javascript"></script>
-<img src="green_dot.png" width='15' height='15' />Strong signal
-<img src="yellow_dot.png" width='15' height='15' />Medium signal
-<img src="red_dot.png" width='15' height='15' />Weak signal
-<img src="black_dot.png" width='15' height='15' />Detected in last 48 hours, but not currently<br>
-Zoom in for more stations.  Click a call sign for more details.
-This page updates every five minutes.
-<ul id="options">
-<li><a href="/cricket/grapher.cgi?target=%2FTV">Click here for graphs of signal strength for all stations ever received</a></li>
-</ul>
+	<h1> TV stations received by <?php echo "$user in $city, $state"; ?></h1>
+	<img src="green_dot.png" width='15' height='15' /> Strong signal
+	<img src="yellow_dot.png" width='15' height='15' /> Medium signal
+	<img src="red_dot.png" width='15' height='15' /> Weak signal
+	<img src="black_dot.png" width='15' height='15' /> Detected in last 48 hours, but not currently<br />
+	Zoom in for more stations.  Click a call sign for more details.<br />
+	This page updates every five minutes.<br /><br />
+	<a href="/cricket/grapher.cgi?target=%2FTV">Click here for graphs of signal strength for all stations ever received</a>
 </div>
 <div id="content">
 <div id="map-wrapper">
