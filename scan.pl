@@ -135,7 +135,7 @@ do
 			{
 				if($tsid eq '0x0001')
 				{
-					log_output("Received a station with an invalid tsid $tsid on rf channel $channel, display channel $number");
+					log_output("Received a station with an invalid tsid $tsid on rf channel $channel, display channel $number at $file_time");
 					log_output("This is most likely a translator that has not been properly set up correctly");
 					log_output("You can add this station manually, but note that the tsid might change in the future when it gets set properly and will be re-added");
 					log_output("Signal: $strength, SNR: $sig_noise, SER: $symbol_err");
@@ -183,7 +183,7 @@ do
 							$realrf = $3;
 							if($realrf != $channel || $realdisp != $number)
 							{
-								log_output("Found a translator of $callsign on channel $channel, add manually");
+								log_output("Found a translator of $callsign on channel $channel at $file_time, add manually");
 								log_output("Signal: $strength, SNR: $sig_noise, SER: $symbol_err");
 								next;
 							}
@@ -206,7 +206,7 @@ do
 					
 					if(scalar(@lines) == 0)
 					{
-						log_output("Found a translator of $callsign on channel $channel, add manually");
+						log_output("Found a translator of $callsign on channel $channel at $file_time, add manually");
 						log_output("Signal: $strength, SNR: $sig_noise, SER: $symbol_err");
 						next;
 					}
