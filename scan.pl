@@ -56,6 +56,7 @@ $loop = ($ini{'cfg'}{'loop'} eq "true" ? 1 : '');
 $wait = $ini{'cfg'}{'wait'};
 
 $wait = ($wait ? $wait : 60);
+$wait_time = 0;
 
 if(defined($ini{'cfg'}{'latitude'}) && defined($ini{'cfg'}{'longitude'}))
 {
@@ -68,12 +69,16 @@ if(defined($ini{'cfg'}{'latitude'}) && defined($ini{'cfg'}{'longitude'}))
 $log = true;
 open LOG, ">>tuner-$TUNER_ID-".substr($TUNER, -2, 1).".log" or $log = false;
 
+# remove buffering for LOG
+$| = 1;
+
 ##### main #####
 do
 {
 	my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = localtime(time);
 
 	$conn = DBI->connect($dsn, $user, $password);
+	my $start_time = time();
 	
 	#If we couldn't connect, just loop and try again (after sleeping of course...)	
 	if(!$conn)
@@ -140,7 +145,6 @@ do
 					log_output("You can add this station manually, but note that the tsid might change in the future when it gets set properly and will be re-added");
 					log_output("Signal: $strength, SNR: $sig_noise, SER: $symbol_err");
 					next;
-					
 				}
 				
 				$rs = $conn->prepare("select callsign, distance, id from stations where tsid='$tsid' and rf=$channel");
@@ -201,7 +205,7 @@ do
 					# cha2: upper bound on channel number to search
 					# type: (3) Only licenced stations, no CPs or pending aps
 					# list: (4) Text ouput, pipe delimited
-					my $url = "http://www.fcc.gov/fcc-bin/tvq?call=$callsign&chan=$channel&cha2=$channel&type=3&list=4";
+					my $url = "http://www.fcc.gov/fcc-bin/tvq?call=$callsign&chan=$channel&cha2=$channel&list=4";
 					my @lines = split(/\n/, get($url));
 					
 					if(scalar(@lines) == 0)
@@ -600,14 +604,25 @@ do
 
 		$conn->disconnect;
 	}
-} while($loop && (my $s = sleep $wait));
+
+	my $end_time = time();
+	my $total_time = $end_time - $start_time;
+	$wait_time = $wait - $total_time;
+	$wait_time = ($wait_time <= 0 ? 10 : $wait_time);
+
+	print "scan took $total_time seconds, waiting for $wait_time to get to $wait seconds\n";
+	
+} while($loop && (my $s = sleep $wait_time));
+
+close(LOG);
 
 sub log_output
 {
-	my ($msg) = $_;
+	my ($msg) = @_;
 	print "$msg\n";
 	if($log)
 	{
+		print "log is $log\n";
 		print LOG "$msg\n";
 	}
 }
