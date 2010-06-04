@@ -20,10 +20,22 @@ tie %ini, 'Config::IniFiles', ( -file => 'config.ini' );
 # program used to interface with tuner
 $CONFIG_PROG = $ini{'cfg'}{'prog'};
 
+@tuner_list = split(/\s+/, $ini{'cfg'}{'tuners'});
+
+@tuners = ();
+foreach $tuner (@tuner_list)
+{
+	@device_list = split(/\s+/, $ini{$tuner}{'tuners'});
+	foreach $device (@device_list)
+	{
+		push @tuners, {'tunerid' => $ini{$tuner}{'tunerid'}, 'tuner' => $device};
+	}
+}
 # tuner ID; can use FFFFFFFF if it's the only one on network
-$TUNER_ID = $ini{'cfg'}{'tunerid'};
+$TUNER_ID = $tuners[0]{'tunerid'};
+
 # which tuner to scan
-$TUNER = $ini{'cfg'}{'tuner'};
+$TUNER = $tuners[0]{'tuner'};
 
 # location of tuner
 $TUNER_LAT = $ini{'info'}{'latitude'};
@@ -32,14 +44,9 @@ $TUNER_LON = $ini{'info'}{'longitude'};
 # Distance to be considered a "DX"
 $DX_DISTANCE = 100;
 
-# wget command and switches. 
-$WGET = 'wget --quiet --output-document=- ';
-# FCC web site for callsign search.
 $FCC_URL = 'http://www.fcc.gov/fcc-bin/tvq?call=$callsign&chan=$channel&cha2=$channel&list=4&size=9';
 # output is like:
 #|WWJ-TV      |-         |DT |44  |ND  |0                   |-  |-  |LIC    |DETROIT                  |MI |US |BLCDT  -19990720LH  |200.   kW |-         |323.0   |-       |72123      |N |42 |26 |52.00 |W |83  |10 |23.00 |CBS BROADCASTING INC.                                                       |   0.00 km |   0.00 mi |  0.00 deg |523.   m|H       |32850 |-       |1003429 |321.    |
-
-$userdir = "/home/zeke/hdhomerunthing";
 
 $database = $ini{'db'}{'database'};
 $hostname = $ini{'db'}{'host'};
@@ -90,9 +97,6 @@ do
 		# log all output from scan, note when calls and all-time new calls are found
 		my $file_time = time2str('%Y-%m-%d %T',time);
 		
-		my $this_scan_file = "$userdir/scans/scan.$file_time";
-		#  open SCAN_FILE, ">>$this_scan_file" or print "can't open $this_scan_file";
-
 		# scan tuner
 		open SCAN, "$CONFIG_PROG $TUNER_ID scan $TUNER |" or die "can't run scan";
 
@@ -270,8 +274,8 @@ do
 						$longitude = ($long_deg + $long_min/60 + $long_sec/3600) * ($long eq 'W' ? -1 : 1);
 						
 						if(defined(@mylocation))
-						{								
-							@location = ( deg2rad($longitude), deg2rad(90 - $latitude) );
+						{
+							my @location = ( deg2rad($longitude), deg2rad(90 - $latitude) );
 							
 							$distance = great_circle_distance(@mylocation, @location, 6378) * 0.621371192;
 						}
@@ -609,9 +613,6 @@ do
 	my $total_time = $end_time - $start_time;
 	$wait_time = $wait - $total_time;
 	$wait_time = ($wait_time <= 0 ? 10 : $wait_time);
-
-	print "scan took $total_time seconds, waiting for $wait_time to get to $wait seconds\n";
-	
 } while($loop && (my $s = sleep $wait_time));
 
 close(LOG);
