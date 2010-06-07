@@ -79,6 +79,9 @@ open LOG, ">>tuner-$TUNER_ID-".substr($TUNER, -2, 1).".log" or $log = false;
 # remove buffering for LOG
 $| = 1;
 
+$SIG{INT} = \&cleanup;
+$SIG{TERM} = \&cleanup;
+
 ##### main #####
 do
 {
@@ -134,9 +137,9 @@ do
 				# ignore all other PROGRAM: lines
 				next if $program;
 				
-				@prog_part = split(/[.]/, $1);
-				$program = $prog_part[0];
-				$number = $2;
+				$program = $1;
+				@num_part = split(/[.]/, $2);
+				$number = $num_part[0];
 				$callsign = $3;
 			}
 			
@@ -181,10 +184,10 @@ do
 					# some stations don't use callsign (like tpt), do lookup on rabbitears
 					else
 					{
-						print "getting callsign from rabbitears\n";
+						log_output("getting callsign from rabbitears");
 						$url="http://rabbitears.info/oddsandends.php?request=tsid";
 						$html=get($url);
-						if($html =~ /<td>$tsid&nbsp;<\/td><td><a href='\/market\.php\?request=station_search&callsign=\d+'>((?:[CWKX][A-Z]{2,3})|(?:[KW]\d{1,2}[A-Z]{2}))<\/a>&nbsp;<\/td><td align='right'>(\d+)(?:&nbsp;)*<\/td><td align='right'>(\d+)/)
+						if($html =~ /<td>$tsid&nbsp;<\/td><td><a href=(?:'|")\/market\.php\?request=station_search&callsign=\d+(?:'|")>((?:[CWKX][A-Z]{2,3})|(?:[KW]\d{1,2}[A-Z]{2}))(?:-(?:(?:TV)|(?:DT)))?<\/a>&nbsp;<\/td><td align='right'>(\d+)(?:&nbsp;)*<\/td><td align='right'>(\d+)/)
 						{
 							$callsign = $1;
 							$realdisp = $2;
@@ -198,7 +201,8 @@ do
 						}
 						else
 						{
-							log_output("Couldn't find callsign for tsid $tsid");
+							log_output("Couldn't find callsign for tsid $tsid on channel $channel, display channel $number at $file_time, add manually");
+							log_output("Signal: $strength, SNR: $sig_noise, SER: $symbol_err");
 							next;
 						}
 					}
@@ -615,7 +619,7 @@ do
 	$wait_time = ($wait_time <= 0 ? 10 : $wait_time);
 } while($loop && (my $s = sleep $wait_time));
 
-close(LOG);
+cleanup();
 
 sub log_output
 {
@@ -623,7 +627,6 @@ sub log_output
 	print "$msg\n";
 	if($log)
 	{
-		print "log is $log\n";
 		print LOG "$msg\n";
 	}
 }
@@ -633,4 +636,13 @@ sub rtrim
 	my $string = shift;
 	$string =~ s/\s+$//;
 	return $string;
+}
+
+sub cleanup
+{
+	if($log)
+	{
+		close(LOG);
+	}
+	exit(0);
 }
