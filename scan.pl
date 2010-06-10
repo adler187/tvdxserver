@@ -28,11 +28,13 @@ foreach $tuner (@tuner_list)
 	@device_list = split(/\s+/, $ini{$tuner}{'tuners'});
 	foreach $device (@device_list)
 	{
-		push @tuners, {'tunerid' => $ini{$tuner}{'tunerid'}, 'tuner' => $device};
+		push @tuners, {'tunerid' => $ini{$tuner}{'tunerid'}, 'tuner' => $device, 'dbtunerid' => $ini{$tuner}{'dbtunerid'}};
 	}
 }
 # tuner ID; can use FFFFFFFF if it's the only one on network
 $TUNER_ID = $tuners[0]{'tunerid'};
+
+$DB_TUNER_ID = $tuners[0]{'dbtunerid'};
 
 # which tuner to scan
 $TUNER = $tuners[0]{'tuner'};
@@ -103,7 +105,7 @@ do
 		# scan tuner
 		open SCAN, "$CONFIG_PROG $TUNER_ID scan $TUNER |" or die "can't run scan";
 
-		my ($id, $tsid, $freq, $channel, $modulation, $strength, $sig_noise, $symbol_err, $program, $number, $callsign, $latitude, $longitude, $distance, $new);
+		my ($id, $tsid, $freq, $channel, $modulation, $strength, $sig_noise, $symbol_err, $program, $number, $callsign, $latitude, $longitude, $distance, $new, $callsign_id);
 		my (%callsign, %modulation, %strength, %sig_noise, %number, %last_seen);
 		while($line = <SCAN>)
 		{
@@ -120,6 +122,7 @@ do
 				$number = '';
 				$callsign = '';
 				$tsid = '';
+				$callsign_id = '';
 			}
 			elsif($line =~ /^LOCK:\s+(\S+)\s+\(ss=(\d+)\s+snq=(\d+)\s+seq=(\d+)\)/)
 			{
@@ -140,19 +143,11 @@ do
 				$program = $1;
 				@num_part = split(/[.]/, $2);
 				$number = $num_part[0];
-				$callsign = $3;
+				$callsign_id = $3;
 			}
 			
 			if ($program)
 			{
-				if($tsid eq '0x0001')
-				{
-					log_output("Received a station with an invalid tsid $tsid on rf channel $channel, display channel $number at $file_time");
-					log_output("This is most likely a translator that has not been properly set up correctly");
-					log_output("You can add this station manually, but note that the tsid might change in the future when it gets set properly and will be re-added");
-					log_output("Signal: $strength, SNR: $sig_noise, SER: $symbol_err");
-					next;
-				}
 				
 				$rs = $conn->prepare("select callsign, distance, id from stations where tsid='$tsid' and rf=$channel");
 				$rs->execute();
@@ -169,6 +164,16 @@ do
 				}
 				else
 				{
+					if($tsid eq '0x0001')
+					{
+						log_output("Received a station with an invalid tsid $tsid on rf channel $channel, display channel $number, station IDs as $callsign_id, at $file_time");
+						log_output("This is most likely a translator that has not been properly set up correctly");
+						log_output("You can add this station manually, but note that the tsid might change in the future when it gets set properly and will be re-added");
+						log_output("Signal: $strength, SNR: $sig_noise, SER: $symbol_err");
+						next;
+					}
+
+					$callsign = $callsign_id;
 					$new = 1;
 					# if callsign is like KTTCDT, remove DT
 					# make sure we don't match KTTC-DT, which would be matched by next if, but end up with KTTC- here
@@ -201,7 +206,7 @@ do
 						}
 						else
 						{
-							log_output("Couldn't find callsign for tsid $tsid on channel $channel, display channel $number at $file_time, add manually");
+							log_output("Couldn't find callsign for tsid $tsid on channel $channel, display channel $number, station IDs as $callsign_id,  at $file_time, add manually");
 							log_output("Signal: $strength, SNR: $sig_noise, SER: $symbol_err");
 							next;
 						}
@@ -314,7 +319,7 @@ do
 					}
 					else
 					{
-						$rs = $conn->prepare("insert into log values($id, $strength, $sig_noise, $symbol_err, '$file_time')");
+						$rs = $conn->prepare("insert into log values($id, $DB_TUNER_ID, $strength, $sig_noise, $symbol_err, '$file_time')");
 						$rs->execute();
 						$rs->finish();
 					}
