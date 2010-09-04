@@ -34,12 +34,12 @@ foreach $tuner (@tuner_list)
 	}
 }
 # tuner ID; can use FFFFFFFF if it's the only one on network
-$TUNER_ID = $tuners[1]{'tunerid'};
+$TUNER_ID = $tuners[0]{'tunerid'};
 
-$DB_TUNER_ID = $tuners[1]{'dbtunerid'};
+$DB_TUNER_ID = $tuners[0]{'dbtunerid'};
 
 # which tuner to scan
-$TUNER = $tuners[1]{'tuner'};
+$TUNER = $tuners[0]{'tuner'};
 
 # location of tuner
 $TUNER_LAT = $ini{'info'}{'latitude'};
@@ -93,10 +93,12 @@ if(false && scalar($tuners) > 1)
 # otherwise don't use any threads
 else
 {
-	scan();
+	scan($tuner[0]);
 }
 sub scan
 {
+# 	my ($tuner) = @_;
+
 	do
 	{
 		my ($sec, $min, $hour, $mday, $mon, $year, $wday, $yday, $isdst) = localtime(time);
@@ -211,17 +213,18 @@ sub scan
 								$realrf = $3;
 								if($realrf != $channel || $realdisp != $number)
 								{
-									log_output("Found a translator of $callsign on channel $channel at $file_time, add manually");
+									log_output("Found a translator of $callsign($tsid). IDs as $callsign_id, RF channel $channel, display channel $number at $file_time, add manually");
 									log_output("Signal: $strength, SNR: $sig_noise, SER: $symbol_err");
-									next;
+									last;
 								}
 							}
 							else
 							{
-								log_output("Couldn't find callsign for tsid $tsid on channel $channel, display channel $number, station IDs as $callsign_id,  at $file_time, add manually");
+								log_output("Couldn't find callsign for tsid $tsid on channel $channel, display channel $number, station IDs as $callsign_id, at $file_time, add manually");
 								log_output("Signal: $strength, SNR: $sig_noise, SER: $symbol_err");
-								next;
+								last;
 							}
+							log_output("Found callsign $callsign");
 						}
 
 						# facid: facility id number
