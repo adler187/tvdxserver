@@ -132,7 +132,6 @@ sub scan
 			while($line = <SCAN>)
 			{
 				print $line;
-				log_output($line);
 				
 				if($line =~ /^SCANNING:\s+(\d+)\s+\(us-bcast:(\d+)?\)/)
 				{
