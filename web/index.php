@@ -123,7 +123,6 @@ function initialize()
 		myinfowindow.open(map, mymarker);
 		active=-1;
 	});
-}
 </script>
 <?php
 } // end if(!mobile)
