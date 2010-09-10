@@ -72,7 +72,7 @@ int scan(const char *tuner)
 	const char *channelmap_scan_group = hdhomerun_channelmap_get_channelmap_scan_group(channelmap);
 	if (!channelmap_scan_group)
 	{
-		fprintf(stderr, "unknown channelmap '%s'\n", channelmap);
+		fprintf(stderr, "unknown channelmap \"%s\"\n", channelmap);
 		return -1;
 	}
 
@@ -87,16 +87,12 @@ int scan(const char *tuner)
 
 	int ret = 0;
 	
-	printf("{\n\tscanresults:\n\t[\n");
-	while (!sigabort)
-	{
-		struct hdhomerun_channelscan_result_t result;
-		ret = hdhomerun_device_channelscan_advance(hd, &result);
-		if (ret < 1)
-		{
-			break;
-		}
+	struct hdhomerun_channelscan_result_t result;
+	ret = hdhomerun_device_channelscan_advance(hd, &result);
 
+	printf("{\n\t\"scanresults\":\n\t[\n");
+	while (ret > 0 && !sigabort)
+	{
 		ret = hdhomerun_device_channelscan_detect(hd, &result);
 		if (ret < 1)
 		{
@@ -109,47 +105,71 @@ int scan(const char *tuner)
 		
 		if (showall || result.transport_stream_id_detected)
 		{
-			printf("\t\t\t'channel': '%s',\n", result.channel_str);
-			printf("\t\t\t'channelmap': '%i',\n", result.channelmap);
-			printf("\t\t\t'frequency': %lu,\n", result.frequency);
-			printf("\t\t\t'programcount': %i,\n", result.program_count);
+			printf("\t\t\t\"channel\": \"%s\",\n", result.channel_str);
+			printf("\t\t\t\"channelmap\": \"%i\",\n", result.channelmap);
+			printf("\t\t\t\"frequency\": %lu,\n", result.frequency);
+			printf("\t\t\t\"programcount\": %i,\n", result.program_count);
 			
-			printf("\t\t\t'status':\n");
+			printf("\t\t\t\"status\":\n");
 			printf("\t\t\t{\n");
-			printf("\t\t\t\t'channel': '%.32s',\n", result.status.channel);
-			printf("\t\t\t\t'modulation': '%s',\n", result.status.lock_str);
-			printf("\t\t\t\t'signal': %s,\n", result.status.signal_present ? "true" : "false");
-			printf("\t\t\t\t'supported': %s,\n", result.status.lock_supported ? "true" : "false");
-			printf("\t\t\t\t'ss': %u,\n", result.status.signal_strength);
-			printf("\t\t\t\t'snr': %u,\n", result.status.signal_to_noise_quality);
-			printf("\t\t\t\t'ser': %u,\n", result.status.symbol_error_quality);
-			printf("\t\t\t\t'bps': %u,\n", result.status.raw_bits_per_second);
-			printf("\t\t\t\t'pps': %u,\n", result.status.packets_per_second);
-			printf("\t\t\t}\n");
+			printf("\t\t\t\t\"channel\": \"%.32s\",\n", result.status.channel);
+			printf("\t\t\t\t\"modulation\": \"%s\",\n", result.status.lock_str);
+			printf("\t\t\t\t\"signal\": %s,\n", result.status.signal_present ? "true" : "false");
+			printf("\t\t\t\t\"supported\": %s,\n", result.status.lock_supported ? "true" : "false");
+			printf("\t\t\t\t\"ss\": %u,\n", result.status.signal_strength);
+			printf("\t\t\t\t\"snr\": %u,\n", result.status.signal_to_noise_quality);
+			printf("\t\t\t\t\"ser\": %u,\n", result.status.symbol_error_quality);
 			
-			if(result.transport_stream_id_detected)
+			// only available on TECH editions, I believe
+			printf("\t\t\t\t\"bps\": %u,\n", result.status.raw_bits_per_second);
+			printf("\t\t\t\t\"pps\": %u\n", result.status.packets_per_second);
+			printf("\t\t\t}");
+			
+			if(!result.transport_stream_id_detected)
 			{
-				printf("\t\t\t'tsid': '0x%04X',\n", result.transport_stream_id);
+				printf("\n");
+			}
+			else
+			{
+				printf(",\n");
+				printf("\t\t\t\"tsid\": \"0x%04X\",\n", result.transport_stream_id);
 				
-				printf("\t\t\t'programs':\n\t\t\t[\n");
+				printf("\t\t\t\"programs\":\n\t\t\t[\n");
 				for (int i = 0; i < result.program_count; i++)
 				{
 					struct hdhomerun_channelscan_program_t *program = &result.programs[i];
 					
 					printf("\t\t\t\t{\n");
-					printf("\t\t\t\t\t'program': %.64s,\n", program->program_str);
-					printf("\t\t\t\t\t'number': %i,\n", program->program_number);
-					printf("\t\t\t\t\t'major': %i,\n", program->virtual_major);
-					printf("\t\t\t\t\t'minor': %i,\n", program->virtual_minor);
-					printf("\t\t\t\t\t'type': %i,\n", program->type);
-					printf("\t\t\t\t\t'idstring': '%.32s'\n", program->name);
-					printf("\t\t\t\t},\n");
+					printf("\t\t\t\t\t\"program\": \"%.64s\",\n", program->program_str);
+					printf("\t\t\t\t\t\"number\": %i,\n", program->program_number);
+					printf("\t\t\t\t\t\"major\": %i,\n", program->virtual_major);
+					printf("\t\t\t\t\t\"minor\": %i,\n", program->virtual_minor);
+					printf("\t\t\t\t\t\"type\": %i,\n", program->type);
+					printf("\t\t\t\t\t\"idstring\": \"%.32s\"\n", program->name);
+					
+					// if not last, add a comma to contine the list
+					if(result.program_count != i+1)
+					{
+						printf("\t\t\t\t},\n");
+					}
+					else
+					{
+						printf("\t\t\t\t}\n");
+					}
 				}
 				printf("\t\t\t]\n");
 			}
 		}
-		
-		printf("\t\t},\n");
+		ret = hdhomerun_device_channelscan_advance(hd, &result);
+		if (ret < 1)
+		{
+			printf("\t\t}\n");
+		}
+		else
+		{
+			printf("\t\t},\n");
+		}
+		fflush(stdout);
 	}
 	
 	printf("\t]\n}\n");

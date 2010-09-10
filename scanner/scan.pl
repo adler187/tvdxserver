@@ -9,6 +9,7 @@ use Config::IniFiles;
 use LWP::Simple;
 use Math::Trig qw(great_circle_distance deg2rad);
 use Data::Dumper;
+use JSON;
 
 use DBI;
 
@@ -36,6 +37,10 @@ foreach my $tuner (@tuner_list)
 		push @tuners, {'tunerid' => $ini{$tuner}{'tunerid'}, 'tuner' => $device_list[$i], 'dbtunerid' => $db_id_list[$i], 'frequencies' => $ini{$tuner}{'frequencies'}};
 	}
 }
+
+# set to false to prevent inserting in database
+# useful for testing
+my $log_results = false;
 
 # location of tuner
 my $TUNER_LAT = $ini{'info'}{'latitude'};
@@ -125,54 +130,39 @@ sub scan
 			my $file_time = time2str('%Y-%m-%d %T',time);
 
 			# scan tuner
-			open SCAN, "$CONFIG_PROG $tunerid scan $tuner |" or die "can't run scan";
+			open SCAN, "$CONFIG_PROG -i $tunerid -t $tuner 2> /dev/null |" or die "can't run scan";
 
-			my ($id, $tsid, $freq, $channel, $modulation, $strength, $sig_noise, $symbol_err, $program, $number, $callsign, $latitude, $longitude, $distance, $new, $callsign_id);
-			my (%callsign, %modulation, %strength, %sig_noise, %number, %last_seen);
-			while($line = <SCAN>)
+			my $json = do
 			{
-				print $line;
+				local $/ = undef;
+				<SCAN>;
+			};
+
+			close SCAN;
+			
+			my $results = decode_json($json);
+			
+			my ($id, $channel, $program, $virtual, $callsign, $latitude, $longitude, $distance, $new, $callsign_id);
+			foreach my $result (@{$results->{scanresults}})
+			{
+				print "$result->{channel}\n";
 				
-				if($line =~ /^SCANNING:\s+(\d+)\s+\(us-bcast:(\d+)?\)/)
-				{
-					$freq = $1;
-					$channel = $2;
-					$modulation = '';
-					$strength = '';
-					$sig_noise = '';
-					$symbol_err = '';
-					$program = '';
-					$number = '';
-					$callsign = '';
-					$tsid = '';
-					$callsign_id = '';
-				}
-				elsif($line =~ /^LOCK:\s+(\S+)\s+\(ss=(\d+)\s+snq=(\d+)\s+seq=(\d+)\)/)
-				{
-					$modulation = $1;
-					$strength   = $2;
-					$sig_noise  = $3;
-					$symbol_err = $4;
-				}
-				elsif($line =~ /^TSID:\s+(0x(?:\d|[ABCDEF])+)/)
-				{
-					$tsid = $1;
-				}
-				elsif($line =~ /^PROGRAM\s+(\d+):\s+(\S+)(?:\s+(\S+))?/)
-				{
-					# ignore all other PROGRAM: lines
-					next if $program;
+				($blank, $channel) = split(/:/, $result->{channel});
 
-					$program = $1;
-					@num_part = split(/[.]/, $2);
-					$number = $num_part[0];
-					$callsign_id = $3;
-				}
-
-				if ($program)
+				if($result->{programcount} > 0)
 				{
+# 					foreach my $program (@{$result->{programs}})
+# 					{
+# 						print "$program->{program}\n";
+# 					}
 
-					$rs = $conn->prepare("select callsign, distance, id from stations where tsid='$tsid' and rf=$channel");
+					$program = @{$result->{programs}}[0]->{number};
+					$virtual = @{$result->{programs}}[0]->{major};
+					$callsign_id = @{$result->{programs}}[0]->{idstring};
+					
+					print "found station: $callsign_id with virtual channel $virtual. Using PSIP program number $program\n";
+					
+					$rs = $conn->prepare("select callsign, distance, id from stations where tsid='$result->{tsid}' and rf=$channel");
 					$rs->execute();
 					@row = $rs->fetchrow_array();
 					$rs->finish();
@@ -187,12 +177,12 @@ sub scan
 					}
 					else
 					{
-						if($tsid eq '0x0001')
+						if($result->{tsid} eq '0x0001')
 						{
-							log_output("Received a station with an invalid tsid $tsid on rf channel $channel, display channel $number, station IDs as $callsign_id, at $file_time");
+							log_output("Received a station with an invalid tsid $result->{tsid} on rf channel $channel, display channel $virtual, station IDs as $callsign_id, at $file_time");
 							log_output("This is most likely a translator that has not been properly set up correctly");
 							log_output("You can add this station manually, but note that the tsid might change in the future when it gets set properly and will be re-added");
-							log_output("Signal: $strength, SNR: $sig_noise, SER: $symbol_err");
+							log_output("Signal: $result->{status}->{ss}, SNR: $result->{status}->{snr}, SER: $result->{status}->{ser}");
 							next;
 						}
 
@@ -215,22 +205,22 @@ sub scan
 							log_output("getting callsign from rabbitears");
 							$url="http://rabbitears.info/oddsandends.php?request=tsid";
 							$html=get($url);
-							if($html =~ /<td>$tsid&nbsp;<\/td><td><a href=(?:'|")\/market\.php\?request=station_search&callsign=\d+(?:'|")>((?:[CWKX][A-Z]{2,3})|(?:[KW]\d{1,2}[A-Z]{2}))(?:-(?:(?:TV)|(?:DT)))?<\/a>&nbsp;<\/td><td align='right'>(\d+)(?:&nbsp;)*<\/td><td align='right'>(\d+)/)
+							if($html =~ /<td>$result->{tsid}&nbsp;<\/td><td><a href=(?:'|")\/market\.php\?request=station_search&callsign=\d+(?:'|")>((?:[CWKX][A-Z]{2,3})|(?:[KW]\d{1,2}[A-Z]{2}))(?:-(?:(?:TV)|(?:DT)))?<\/a>&nbsp;<\/td><td align='right'>(\d+)(?:&nbsp;)*<\/td><td align='right'>(\d+)/)
 							{
 								$callsign = $1;
 								$realdisp = $2;
 								$realrf = $3;
-								if($realrf != $channel || $realdisp != $number)
+								if($realrf != $channel || $realdisp != $virtual)
 								{
-									log_output("Found a translator of $callsign($tsid). IDs as $callsign_id, RF channel $channel, display channel $number at $file_time, add manually");
-									log_output("Signal: $strength, SNR: $sig_noise, SER: $symbol_err");
+									log_output("Found a translator of $callsign($result->{tsid}). IDs as $callsign_id, RF channel $channel, display channel $virtual at $file_time, add manually");
+									log_output("Signal: $result->{status}->{ss}, SNR: $result->{status}->{snr}, SER: $result->{status}->{ser}");
 									last;
 								}
 							}
 							else
 							{
-								log_output("Couldn't find callsign for tsid $tsid on channel $channel, display channel $number, station IDs as $callsign_id, at $file_time, add manually");
-								log_output("Signal: $strength, SNR: $sig_noise, SER: $symbol_err");
+								log_output("Couldn't find callsign for tsid $result->{tsid} on channel $channel, display channel $virtual, station IDs as $callsign_id, at $file_time, add manually");
+								log_output("Signal: $result->{status}->{ss}, SNR: $result->{status}->{snr}, SER: $result->{status}->{ser}");
 								last;
 							}
 							log_output("Found callsign $callsign");
@@ -248,7 +238,7 @@ sub scan
 						if(scalar(@lines) == 0)
 						{
 							log_output("Found a translator of $callsign on channel $channel at $file_time, add manually");
-							log_output("Signal: $strength, SNR: $sig_noise, SER: $symbol_err");
+							log_output("Signal: $result->{status}->{ss}, SNR: $result->{status}->{snr}, SER: $result->{status}->{ser}");
 							next;
 						}
 
@@ -300,7 +290,7 @@ sub scan
 								$agl
 							) = @tokens;
 
-							# should be not needed with type=3 in fcc query
+							# should not be needed with type=3 in fcc query
 							next if (rtrim($lic_type) =~ /STA/);
 
 							$latitude = ($lat_deg + $lat_min/60 + $lat_sec/3600) * ($lat eq 'S' ? -1 : 1);
@@ -322,15 +312,18 @@ sub scan
 
 						print "$callsign: $latitude, $longitude, $distance\n";
 
-						$rs = $conn->prepare("insert into stations(tsid, callsign, parentcall, rf, display, latitude, longitude, distance) values('$tsid', '$callsign', '$callsign', $channel, $number, $latitude, $longitude, $distance)");
-						$rs->execute();
-						$rs->finish();
+						if($log_results)
+						{
+							$rs = $conn->prepare("insert into stations(tsid, callsign, parentcall, rf, display, latitude, longitude, distance) values('$result->{tsid}', '$callsign', '$callsign', $channel, $virtual, $latitude, $longitude, $distance)");
+							$rs->execute();
+							$rs->finish();
 
-						$rs = $conn->prepare("select last_insert_id()");
-						$rs->execute();
-						@row = $rs->fetchrow_array();
-						$id = $row[0];
-						$rs->finish();
+							$rs = $conn->prepare("select last_insert_id()");
+							$rs->execute();
+							@row = $rs->fetchrow_array();
+							$id = $row[0];
+							$rs->finish();
+						}
 					}
 
 					# Only log the station if it is new, a DX, or is around the top of the hour (so once per hour).
@@ -338,12 +331,12 @@ sub scan
 					{
 						if($id == 0)
 						{
-							log_output("Failed to insert station $callsign with tsid($tsid) on channel($channel, $number)");
-							log_output("Had Strength($strength), SNR($sig_noise), Symbol($symbol_err) at $file_time");
+							log_output("Failed to insert station $callsign with tsid($result->{tsid}) on channel($channel, $virtual)");
+							log_output("Had Strength($result->{status}->{ss}), SNR($result->{status}->{snr}), Symbol($result->{status}->{ser}) at $file_time");
 						}
-						else
+						elsif($log_results)
 						{
-							$rs = $conn->prepare("insert into log values($id, $dbtunerid, $strength, $sig_noise, $symbol_err, '$file_time')");
+							$rs = $conn->prepare("insert into log values($id, $dbtunerid, $result->{status}->{ss}, $result->{status}->{snr}, $result->{status}->{ser}, '$file_time')");
 							$rs->execute();
 							$rs->finish();
 						}
