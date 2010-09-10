@@ -3,24 +3,28 @@
 <?php include "include/functions.php"; ?>
 
 <?php
-$options = array('2 DAY' => 'Last 48 hours', '1 DAY' => 'Last 24 Hours', '6 HOUR' => 'Last 6 Hours', '1 HOUR' => 'Last hour', 'ALL' => 'All results');
+$options = array('48' => 'Last 48 hours', '24' => 'Last 24 Hours', '12' => 'Last 12 Hours', '6' => 'Last 6 Hours', '1' => 'Last hour', 'ALL' => 'All results');
 
 $tuners = array();
 
 $rs = mysql_query("select id, tunerid from tuners");
+
+$tuner = '';
+
 while($row = mysql_fetch_array($rs))
 {
 	$id = $row[0];
 	$tunerid = $row[1];
 
 	$tuners[$id] = $tunerid;
+	
+	
+	if(!$tuner)
+	{
+		$tuner = $id;
+	}
 }
 
-foreach($tuners as $id => $tunerid)
-{
-	$tuner = $id;
-	break;
-}
 if(isset($_POST['tuner']))
 {
 	$tuner = $_POST['tuner'];
@@ -66,8 +70,9 @@ if(!$mobile)
 {
 ?>
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js" type="text/javascript"></script>
 <script src="http://maps.google.com/maps/api/js?sensor=false"></script>
-<script src="js/maps." type="text/javascript"></script>
+<script src="js/maps.js" type="text/javascript"></script>
 <script type="text/javascript">
 function initialize()
 {
@@ -95,7 +100,7 @@ function initialize()
 		var center = map.getCenter();
 		
 		document.getElementById('lat').value = center.lat();
-		document.getElementById('long').value = center.lng();
+		document.getElementById// echo "/*$query\n*/";('long').value = center.lng();
 	});
 
 
@@ -123,7 +128,6 @@ function initialize()
 		myinfowindow.open(map, mymarker);
 		active=-1;
 	});
-</script>
 <?php
 } // end if(!mobile)
 
@@ -166,6 +170,27 @@ $query .= "stations.callsign in (
 		GROUP BY(stations.callsign)";
 
 // echo "/*$query\n*/";
+
+$mindistance = 0;
+if(isset($_POST['dxonly']))
+{
+	$mindistance = 100;
+}
+
+foreach($options as $key => $value)
+{
+	$time = $key;
+	break;
+}
+if(isset($_POST['time']))
+{
+	$time = $_POST['time'];
+}
+
+if($time == 'ALL')
+	$query = "call GetAllLogInfo($tuner, $mindistance)";
+else
+	$query = "call GetLogInfo($tuner, $mindistance, $time)";
 
 $stmt = mysql_query($query);
 
@@ -237,7 +262,7 @@ while($row = mysql_fetch_assoc($stmt))
 if(!$mobile)
 {
 ?>
-	}
+}
 </script>
 <?php
 } // if(!$mobile)
