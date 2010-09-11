@@ -68,6 +68,7 @@ function getMarkerImage($ss, $snq, $seq)
 <title>Stations received by <?php echo $user; ?></title>
 
 <link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dijit/themes/claro/claro.css" />
+<link rel="stylesheet" type="text/css" href="Simpl.css" />
 <script src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js" type="text/javascript" djConfig="parseOnLoad: true"></script>
 <script type='text/javascript'>
 	dojo.require("dojo.data.ItemFileReadStore");
@@ -109,7 +110,7 @@ function initialize()
 		var center = map.getCenter();
 		
 		document.getElementById('lat').value = center.lat();
-		document.getElementById// echo "/*$query\n*/";('long').value = center.lng();
+		document.getElementById('long').value = center.lng();
 	});
 
 
@@ -228,7 +229,7 @@ if(!$mobile)
 else
 {
 ?>
-<style>
+<!--<style>
 select
 {
 /* 	width: 320px; */
@@ -242,7 +243,7 @@ label
 {
 	font-size: 200%;
 }
-</style>
+</style>-->
 <?php
 }
 ?>
@@ -252,57 +253,27 @@ label
 <div dojoType="dojo.data.ItemFileReadStore" url="ajax/time_intervals.php" jsId="timeIntervalStore"></div>
 <div dojoType="dojo.data.ItemFileReadStore" url="ajax/tuners.php" jsId="tunerStore"></div>
 
-<div>
-<form action='<?php phpself(); ?>' method='POST'>
-	<input id='zoom' name='zoom' type='hidden' value='<?php echo $zoom; ?>' />
-	<input id='lat' name='lat' type='hidden' value='<?php echo $latitude; ?>' />
-	<input id='long' name='long' type='hidden' value='<?php echo $longitude; ?>' />
-	<input dojoType="dijit.form.FilteringSelect" name='tuner' value='<?php echo $tuner->id ?>' displayValue='<?php echo $tuner->tunerid ?>' store="tunerStore" searchAttr="tunerid" />
-	<input dojoType="dijit.form.FilteringSelect" name='time' value='<?php echo $time->time_interval ?>' displayValue='<?php echo $time->description ?>' store="timeIntervalStore" searchAttr="description" />
-<!-- 	<select name='tuner'> -->
-<?php
-/*
-foreach($tuners as $value => $text)
-{
-	$selected = '';
-	if(isset($_POST['tuner']) && $_POST['tuner'] == $value)
-	{
-		$selected = ' selected=\'true\'';
-	}
-	echo "<option value='$value'$selected>$text</option>\n";
-}
-?>
-	</select>
-	<select name='time'>
-<?php
-	foreach($options as $value => $text)
-	{
-		$selected = '';
-		if(isset($_POST['time']) && $_POST['time'] == $value)
-		{
-			$selected = ' selected=\'true\'';
-		}
-		echo "<option value='$value'$selected>$text</option>\n";
-	}
-	*/
-?>
-<!-- 	</select> -->
-	<input type='submit' name='submit' value='Go' /><br />
-	<br />
-	<label for='dxonly'>Only show DXes</label><input type='checkbox' id='dxonly' name='dxonly' value='dxonly' <?php echo (isset($_POST['dxonly']) ? "checked='checked'" : "" ); ?> />
-</form>
-</div>
-<div id="content">
-	<div id="sidebar" <?php echo (!$mobile ? 'style="float: left; width: 200px;"' : '' ); ?> >
+<div class="ColumnWrapper" style="height: 100%">
+	<div class="ColumnOneQuarter" style="height: 100%">
+		<form action='<?php phpself(); ?>' method='POST'>
+			<input id='zoom' name='zoom' type='hidden' value='<?php echo $zoom; ?>' />
+			<input id='lat' name='lat' type='hidden' value='<?php echo $latitude; ?>' />
+			<input id='long' name='long' type='hidden' value='<?php echo $longitude; ?>' />
+			<input dojoType="dijit.form.FilteringSelect" name='tuner' value='<?php echo $tuner->id ?>' displayValue='<?php echo $tuner->tunerid ?>' store="tunerStore" searchAttr="tunerid" />
+			<input dojoType="dijit.form.FilteringSelect" name='time' value='<?php echo $time->time_interval ?>' displayValue='<?php echo $time->description ?>' store="timeIntervalStore" searchAttr="description" />
+
+			<input type='submit' name='submit' value='Go' /><br />
+			<br />
+			<label for='dxonly' style='width: auto'>Only show DXes</label><input type='checkbox' id='dxonly' name='dxonly' value='dxonly' <?php echo (isset($_POST['dxonly']) ? "checked='checked'" : "" ); ?> />
+		</form>
 		<?php if(!$mobile) echo 'Click text to locate station on map'; ?>
-		<ul id="sidebar-list">
-<!-- 			<li>Show All</li> -->
+		<ul id="sidebar-list" style="height: 100%; overflow: auto">
 <?php
 	foreach($stations as $index => $station)
 	{
 		$callsign = $station['callsign'];
 		$distance = $station['distance'];
-		$data = "$callsign ($distance miles)";
+		$data = "$callsign&nbsp;($distance&nbsp;miles)";
 		$a = "<a href=\"#\" onclick=\"markers[$index].click()\">$data</a>";
 		$li = $mobile ? $data : $a;
 		echo "<li>$li</li>\n";
@@ -314,11 +285,12 @@ foreach($tuners as $value => $text)
 if(!$mobile)
 {
 ?>
-	<div id="map_canvas" style="width: 80%; height:100%; float: right;"></div>
+    <div class="ColumnThreeQuarters" style="height: 100%">
+		<div id="map_canvas" style="height: 100%"></div>
+	</div>
 <?php
 }
- ?>
-
+?>
 </div>
 </body>
 </html>
