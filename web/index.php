@@ -3,31 +3,33 @@
 <?php include "include/functions.php"; ?>
 
 <?php
-$options = array('48' => 'Last 48 hours', '24' => 'Last 24 Hours', '12' => 'Last 12 Hours', '6' => 'Last 6 Hours', '1' => 'Last hour', 'ALL' => 'All results');
 
-$tuners = array();
+$time_intervals = json_decode(file_get_contents("http://".$_SERVER["HTTP_HOST"]."/ajax/time_intervals.php"));
 
-$rs = mysql_query("select id, tunerid from tuners");
+$time = $time_intervals->items[0];
 
-$tuner = '';
+$tuners = json_decode(file_get_contents("http://".$_SERVER["HTTP_HOST"]."/ajax/tuners.php"));
 
-while($row = mysql_fetch_array($rs))
-{
-	$id = $row[0];
-	$tunerid = $row[1];
-
-	$tuners[$id] = $tunerid;
-	
-	
-	if(!$tuner)
-	{
-		$tuner = $id;
-	}
-}
+$tuner = $tuners->items[0];
 
 if(isset($_POST['tuner']))
 {
-	$tuner = $_POST['tuner'];
+	for($i = 0; $i < count($tuners->items); $i++)
+	{
+		$tuner = $tuners->items[$i];
+		if($tuner->id == $_POST['tuner'])
+			break;
+	}
+}
+
+if(isset($_POST['time']))
+{
+	for($i = 0; $i < count($time_intervals->items); $i++)
+	{
+		$time = $time_intervals->items[$i];
+		if($time->time_interval == $_POST['time'])
+			break;
+	}
 }
 
 $zoom = 6;
@@ -65,15 +67,22 @@ function getMarkerImage($ss, $snq, $seq)
 <head>
 <title>Stations received by <?php echo $user; ?></title>
 
+<link rel="stylesheet" type="text/css" href="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dijit/themes/claro/claro.css" />
+<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js" type="text/javascript" djConfig="parseOnLoad: true"></script>
+<script type='text/javascript'>
+	dojo.require("dojo.data.ItemFileReadStore");
+	dojo.require("dijit.form.FilteringSelect");
+</script>
 <?php
 if(!$mobile)
 {
 ?>
 <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
-<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.5/dojo/dojo.xd.js" type="text/javascript"></script>
 <script src="http://maps.google.com/maps/api/js?sensor=false"></script>
 <script src="js/maps.js" type="text/javascript"></script>
 <script type="text/javascript">
+
+
 function initialize()
 {
 	var mylatlng = new google.maps.LatLng(<?php echo $latitude; ?>, <?php echo $longitude; ?>);
@@ -129,47 +138,7 @@ function initialize()
 		active=-1;
 	});
 <?php
-} // end if(!mobile)
-
-$query = "SELECT
-	stations.id,
-	stations.callsign,
-	stations.parentcall,
-	stations.latitude,
-	stations.longitude,
-	stations.distance,
-	stations.rf,
-	log.ss,
-	log.snq,
-	log.seq,
-	MAX(log.logtime) as logtime
-FROM stations, log
-WHERE
-	stations.id = log.id AND ";
-$query .= "tunerid = $tuner AND ";
-
-foreach($options as $key => $value)
-{
-	$time = $key;
-	break;
 }
-if(isset($_POST['time']))
-{
-	$time = $_POST['time'];
-}
-
-if($time != 'ALL')
-	$query .= "logtime > DATE_ADD(DATE_SUB(NOW(), interval $time), interval 2 HOUR) AND ";
-
-if(isset($_POST['dxonly']))
-{
-	$query .= "distance > 100 AND ";
-}
-$query .= "stations.callsign in (
-		SELECT distinct callsign from stations )
-		GROUP BY(stations.callsign)";
-
-// echo "/*$query\n*/";
 
 $mindistance = 0;
 if(isset($_POST['dxonly']))
@@ -177,20 +146,10 @@ if(isset($_POST['dxonly']))
 	$mindistance = 100;
 }
 
-foreach($options as $key => $value)
-{
-	$time = $key;
-	break;
-}
-if(isset($_POST['time']))
-{
-	$time = $_POST['time'];
-}
-
-if($time == 'ALL')
-	$query = "call GetAllLogInfo($tuner, $mindistance)";
+if($time->time_interval == 'ALL')
+	$query = "call GetAllLogInfo({$tuner->id}, $mindistance)";
 else
-	$query = "call GetLogInfo($tuner, $mindistance, $time)";
+	$query = "call GetLogInfo({$tuner->id}, $mindistance, {$time->time_interval})";
 
 $stmt = mysql_query($query);
 
@@ -207,7 +166,7 @@ while($row = mysql_fetch_assoc($stmt))
 	$ss = $row['ss'];
 	$snq = $row['snq'];
 	$seq = $row['seq'];
-	$time = $row['logtime'];
+	$logtime = $row['logtime'];
 	$distance = $row['distance'];
 
 	$stations []= $row;
@@ -230,7 +189,7 @@ while($row = mysql_fetch_assoc($stmt))
 	echo "infowindows[$i] = new google.maps.InfoWindow({
 	content:	'$title<br />' +
 				'<hr>' +
-				'Last received on $time<br />' +
+				'Last received on $logtime<br />' +
 				'Channel: $channel<br />' +
 				'Distance: $distance miles<br />' +
 				'Most recent scan:<br />' +
@@ -238,7 +197,7 @@ while($row = mysql_fetch_assoc($stmt))
 				'Signal Quality: $snq<br />' +
 				'Symbol Quality: $seq<br />' +
 				'<br />' +
-				'<a href=\"plot.php?id=$id&tuner=$tuner\" target=\"_blank\">Signal Graph</a><br />' +
+				'<a href=\"plot.php?id=$id&tuner={$tuner->id}\" target=\"_blank\">Signal Graph</a><br />' +
 				'<a href=\"http://rabbitears.info/market.php?request=station_search&callsign=$callsign#station\" target=\"_blank\">RabbitEars lookup</a>'
 });\n";
 
@@ -287,18 +246,22 @@ label
 <?php
 }
 ?>
-<!-- <link href="style.css" rel="stylesheet" type="text/css" /> -->
 </head>
 
-<body id='body' <?php echo (!$mobile ? "onload='initialize()'" : ''); ?> >
+<body id='body' <?php echo (!$mobile ? "onload='initialize()'" : ''); ?> class='claro' >
+<div dojoType="dojo.data.ItemFileReadStore" url="ajax/time_intervals.php" jsId="timeIntervalStore"></div>
+<div dojoType="dojo.data.ItemFileReadStore" url="ajax/tuners.php" jsId="tunerStore"></div>
+
 <div>
 <form action='<?php phpself(); ?>' method='POST'>
 	<input id='zoom' name='zoom' type='hidden' value='<?php echo $zoom; ?>' />
 	<input id='lat' name='lat' type='hidden' value='<?php echo $latitude; ?>' />
 	<input id='long' name='long' type='hidden' value='<?php echo $longitude; ?>' />
-	<select name='tuner'>
+	<input dojoType="dijit.form.FilteringSelect" name='tuner' value='<?php echo $tuner->id ?>' displayValue='<?php echo $tuner->tunerid ?>' store="tunerStore" searchAttr="tunerid" />
+	<input dojoType="dijit.form.FilteringSelect" name='time' value='<?php echo $time->time_interval ?>' displayValue='<?php echo $time->description ?>' store="timeIntervalStore" searchAttr="description" />
+<!-- 	<select name='tuner'> -->
 <?php
-
+/*
 foreach($tuners as $value => $text)
 {
 	$selected = '';
@@ -321,8 +284,9 @@ foreach($tuners as $value => $text)
 		}
 		echo "<option value='$value'$selected>$text</option>\n";
 	}
+	*/
 ?>
-	</select>
+<!-- 	</select> -->
 	<input type='submit' name='submit' value='Go' /><br />
 	<br />
 	<label for='dxonly'>Only show DXes</label><input type='checkbox' id='dxonly' name='dxonly' value='dxonly' <?php echo (isset($_POST['dxonly']) ? "checked='checked'" : "" ); ?> />
