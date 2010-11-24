@@ -3,10 +3,10 @@ if(!defined($db_included))
 {
 	$db_included = true;
 
-	$db_host = "mysql.zekesdominion.com";
-	$db_username = "dxscan";
-	$db_password = "0j3rm1";
-	$db_db = "dxscan";
+	$db_host = "my.hostname.tld";
+	$db_username = "username";
+	$db_password = "password";
+	$db_db = "database";
 
 
 	// added TRUE, 131074 parameters because otherwise stored procedures don't work
