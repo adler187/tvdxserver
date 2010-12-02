@@ -1,0 +1,26 @@
+[cfg]
+prog = /home/zeke/libhdhomerun_20090830/scan
+loop = true
+wait = 600
+latitude = 44.032686
+longitude = -92.648311
+tuners=tuner0
+
+[db]
+host = mysql.zekesdominion.com
+port = 3306
+database = dxscan
+username = dxscan
+pass = 0j3rm1
+
+[tuner0]
+dbtunerids = 0
+tunerid = 1016D42E
+tuners = /tuner0/
+frequencies = ALL
+
+[tuner1]
+dbtunerids = 1
+tunerid = 1016D42E
+tuners = /tuner1/
+frequencies = VHF

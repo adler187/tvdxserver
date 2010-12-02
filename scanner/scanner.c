@@ -1,5 +1,5 @@
 /*
- * hdhomerun_scan.c
+ * scanner.c
  *
  * Copyright © 2010 Kevin Adler
  *
@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <libgen.h>
 #include <getopt.h>
-#include "hdhomerun.h"
+#include <libhdhomerun/hdhomerun.h>
 
 char *appname;
 

@@ -39,10 +39,11 @@ CREATE TABLE time_intervals (
 	PRIMARY KEY(time_interval)
 ) ENGINE=MyISAM;
 
-INSERT INTO time_intervals VALUES('48', 'Last 48 hours');
-INSERT INTO time_intervals VALUES('12', 'Last 12 Hours');
-INSERT INTO time_intervals VALUES('6', 'Last 6 Hours');
-INSERT INTO time_intervals VALUES('1', 'Last hour');
+INSERT INTO time_intervals VALUES('48',  'Last 48 hours');
+INSERT INTO time_intervals VALUES('24',  'Last 24 Hours');
+INSERT INTO time_intervals VALUES('12',  'Last 12 Hours');
+INSERT INTO time_intervals VALUES('6',   'Last 6 Hours');
+INSERT INTO time_intervals VALUES('1',   'Last hour');
 INSERT INTO time_intervals VALUES('ALL', 'All results');
 
 DELIMITER !
