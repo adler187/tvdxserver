@@ -1,0 +1,43 @@
+<p>
+  <b>Tsid:</b>
+  <%=h @station.tsid %>
+</p>
+
+<p>
+  <b>Callsign:</b>
+  <%=h @station.callsign %>
+</p>
+
+<p>
+  <b>Parent callsign:</b>
+  <%=h @station.parent_callsign %>
+</p>
+
+<p>
+  <b>Rf:</b>
+  <%=h @station.rf %>
+</p>
+
+<p>
+  <b>Display:</b>
+  <%=h @station.display %>
+</p>
+
+<p>
+  <b>Latitude:</b>
+  <%=h @station.latitude %>
+</p>
+
+<p>
+  <b>Longitude:</b>
+  <%=h @station.longitude %>
+</p>
+
+<p>
+  <b>Distance:</b>
+  <%=h @station.distance %>
+</p>
+
+
+<%= link_to 'Edit', edit_station_path(@station) %> |
+<%= link_to 'Back', stations_path %>
