@@ -1,0 +1,28 @@
+# Just like rails, you can define different sections for your environments: development, test, and production
+# This is an example of a development configuration
+
+development:
+  scan_program: /path/to/scanner # the scanner binary that is in the scanner branch
+  loop: false                    # do you want to keep scanning (true | false)
+  sleep_time: 600                # time in seconds to sleep after each scan
+  # latitude and longitude where the tuner is located
+  # if these are defined, the script will calculate the distance between the tower
+  # and the tuner. Values in decimal form (+|-)12.345678
+  latitude: <latitude>
+  longitude: <longitude>
+  # tuners subsection defines all the tuners, using sub-sections for each tuner
+  # the names of the sub-sections are arbitrary and unimportant
+  tuners:
+    tuner0:
+      id: 1016D42E               # the HDHomeRun id
+      tuner: 0                   # the tuner number
+
+      # which frequencies to scan (currently not supported)
+      # values are:
+      #   ALL    - all frequencies are scanned
+      #   VHF    - only scan channels 2-13
+      #   VHF-LO - only scan channels 2-7
+      #   VHF-HI - only scan channels 7-13
+      #   UHF    - only scan channels 14-69
+      #   UHF-US - only scan channels 14-51
+      frequencies: ALL           

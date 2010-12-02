@@ -16,7 +16,7 @@ module Kernel
 end
 # ============================
 
-config = YAML.load_file("#{RAILS_ROOT}/config/config.yml")
+config = YAML.load_file("#{RAILS_ROOT}/config/scan.yml")
 if config.nil?
 	stderr.puts "Couldn't load config file"
 	exit 1
@@ -34,28 +34,30 @@ if tuners.nil?
 	exit 1
 end
 
-# set to false to prevent inserting in database
-# useful for testing
-LOG_RESULTS = true
-# Boolean(env_config['log_results'])
+# if not set, set to true (default)
+env_config['log_results'] ||= true
 
-CONFIG_PROG = '/home/zeke/Projects/tvscanner/scanner/hdhomerunscan'
+# set to false to prevent inserting in database useful for testing
+LOG_RESULTS = Boolean(env_config['log_results'])
+
+# if not set, set to 'scanner' (hope $PATH is set correctly)
+env_config['scan_program'] ||= 'scanner'
+
+CONFIG_PROG = env_config['scan_program']
 
 # location of tuner
 TUNER_LAT = env_config['latitude'].nil? ? nil : env_config['latitude'].to_f
 TUNER_LON = env_config['longitude'].nil? ? nil : env_config['longitude'].to_f
 LOCATION = !TUNER_LAT.nil? && !TUNER_LON.nil?
 
-
 # Distance to be considered a "DX"
 DX_DISTANCE = 100
- 
-# LOOP = Boolean(env_config['loop'])
-LOOP = false
+
+LOOP = Boolean(env_config['loop'])
+
+# if not set, set to 60 seconds (default)
+env_config['sleep_time'] ||= 60
 SLEEP_TIME = env_config['sleep_time']
-if LOOP && SLEEP_TIME.nil?
-	SLEEP_TIME = 60
-end
 
 def log_output(log, message)
 	if log.nil?
@@ -66,9 +68,8 @@ def log_output(log, message)
 end
 
 def scan(tuner_config)
-	tunerid = tuner_config['tunerid']
-	dbtunerid = tuner_config['dbtunerid']
-	tuner = tuner_config['tuner']
+	tunerid = tuner_config['id']
+	tuner = "/tuner#{tuner_config['tuner']}/"
 
 	log = nil
 	if LOG_RESULTS
