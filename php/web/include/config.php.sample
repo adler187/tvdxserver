@@ -1,0 +1,14 @@
+<?php
+
+// Config Start
+
+if(!defined($config_included))
+{
+	$config_included = true;
+	$user = "USER NAME";
+	$city = "CITY";
+	$state = "STATE";
+	$latitude = 00.00000;
+	$longitude = 00.00000;;
+}
+?>
