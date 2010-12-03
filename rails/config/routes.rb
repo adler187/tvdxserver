@@ -1,5 +1,6 @@
 ActionController::Routing::Routes.draw do |map|
-  map.connect '/posts/destroy_all', :controller => 'stations', :action => 'destroy_all'
+  map.resources :tuners
+
   map.resources :stations
 
   # The priority is based upon order of creation: first created -> highest priority.

@@ -1,0 +1,9 @@
+# Read about fixtures at http://ar.rubyonrails.org/classes/Fixtures.html
+
+one:
+  tuner_id: MyString
+  tuner_number: 1
+
+two:
+  tuner_id: MyString
+  tuner_number: 1

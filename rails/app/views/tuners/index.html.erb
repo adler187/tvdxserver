@@ -1,0 +1,22 @@
+<h1>Listing tuners</h1>
+
+<table>
+  <tr>
+    <th>Tuner</th>
+    <th>Tuner number</th>
+  </tr>
+
+<% @tuners.each do |tuner| %>
+  <tr>
+    <td><%=h tuner.tuner_id %></td>
+    <td><%=h tuner.tuner_number %></td>
+    <td><%= link_to 'Show', tuner %></td>
+    <td><%= link_to 'Edit', edit_tuner_path(tuner) %></td>
+    <td><%= link_to 'Destroy', tuner, :confirm => 'Are you sure?', :method => :delete %></td>
+  </tr>
+<% end %>
+</table>
+
+<br />
+
+<%= link_to 'New tuner', new_tuner_path %>

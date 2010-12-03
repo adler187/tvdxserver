@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20101130054707) do
+ActiveRecord::Schema.define(:version => 20101203043757) do
 
   create_table "stations", :force => true do |t|
     t.string  "tsid",            :limit => 6
@@ -20,6 +20,17 @@ ActiveRecord::Schema.define(:version => 20101130054707) do
     t.decimal "latitude",                      :precision => 6, :scale => 4
     t.decimal "longitude",                     :precision => 6, :scale => 4
     t.decimal "distance",                      :precision => 5, :scale => 1
+  end
+
+  create_table "tuner_infos", :force => true do |t|
+    t.integer  "tuner_id"
+    t.text     "info"
+    t.datetime "created_at"
+  end
+
+  create_table "tuners", :force => true do |t|
+    t.string  "tuner_id",     :limit => 10
+    t.integer "tuner_number", :limit => 1
   end
 
 end
