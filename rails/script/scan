@@ -18,19 +18,19 @@ end
 
 config = YAML.load_file("#{RAILS_ROOT}/config/scan.yml")
 if config.nil?
-	stderr.puts "Couldn't load config file"
+	$stderr.puts "Couldn't load config file"
 	exit 1
 end
 
 env_config = config[RAILS_ENV]
 if env_config.nil?
-	stderr.puts "No configuration for this environment specified"
+	$stderr.puts "No configuration for this environment specified"
 	exit 1
 end
 
 tuners = env_config['tuners']
 if tuners.nil?
-	stderr.puts "No tuner configuration specified"
+	$stderr.puts "No tuner configuration specified"
 	exit 1
 end
 
@@ -68,13 +68,20 @@ def log_output(log, message)
 end
 
 def scan(tuner_config)
-	tunerid = tuner_config['id']
+	tuner_id = tuner_config['id']
+	tuner_number = tuner_config['tuner']
 	tuner = "/tuner#{tuner_config['tuner']}/"
 
 	log = nil
 	if LOG_RESULTS
 # 		IO.sync = false
 # 		log = File.new(tuner.gsub('/', '') + ".log", "w+")
+	end
+	
+	tuner_obj = Tuner.first(:conditions => ['tuner_id = ? and tuner_number = ?', tuner_id, tuner_number])
+	if tuner_obj.nil?
+		$stderr.puts "No tuner in database yet!"
+		exit
 	end
 	
 	begin
@@ -85,7 +92,7 @@ def scan(tuner_config)
 		scan_time = start_time.strftime('%Y-%m-%d %T')
 
 		# scan tuner
-		str = "#{CONFIG_PROG} -i #{tunerid} -t #{tuner} 2> /dev/null"
+		str = "#{CONFIG_PROG} -i #{tuner_id} -t #{tuner} 2> /dev/null"
 	# 	p str
 	# 	process = IO.popen(str, 'r')
 		process = File.new('output.json', 'r')
@@ -98,7 +105,7 @@ def scan(tuner_config)
 
 			# set up some variables
 			# TODO: add more variables here
-			new_station = true
+			new_station = false
 			distance = nil
 			latitude = nil
 			longitude = nil
@@ -111,15 +118,10 @@ def scan(tuner_config)
 
 				puts "found station: #{callsign_id} with virtual channel #{virtual}. Using PSIP program number #{program}"
 
-				station = nil
-				begin
-					station = Station.first(:conditions => ['tsid = ?', result['tsid']])
-					new_station = false
-				rescue ActiveRecord::RecordNotFound
-					station = nil
-				end
+				station = Station.first(:conditions => ['tsid = ? and rf = ? and display = ?', result['tsid'], channel, virtual])
 
 				if station.nil?
+					new_station = true
 					if result['tsid'] == '0x0001'
 						log_output(log, "Received a station with an invalid tsid #{result['tsid']} on rf channel #{channel}, display channel #{virtual}, station IDs as #{callsign_id}, at #{scan_time}")
 						log_output(log, "This is most likely a translator that has not been properly set up correctly")
@@ -263,9 +265,8 @@ def scan(tuner_config)
 					puts "#{callsign}: #{latitude}, #{longitude}, #{distance}"
 
 					if LOG_RESULTS
-						# TODO: Create a station here using Station model
 						station = Station.create(
-							:tsid => results['tsid'],
+							:tsid => result['tsid'],
 							:callsign => callsign,
 							:parent_callsign => nil,
 							:rf => channel.to_i,
@@ -275,7 +276,7 @@ def scan(tuner_config)
 							:distance => distance
 						)
 
-						p station
+# 						p station
 						
 						if !station.save
 							station.errors
@@ -286,6 +287,18 @@ def scan(tuner_config)
 				if (true || distance > DX_DISTANCE || new_station)
 					# TODO: Create a log result here using Log model
 # 						log = Log.create
+# 					p result
+					status = result['status']
+					result_log = Log.create(
+						:signal_strength => status['ss'],
+						:signal_to_noise => status['snr'],
+						:signal_quality => status['ser'],
+						:station => station,
+						:tuner => tuner_obj
+					)
+					if !result_log.save
+						result_log.errors
+					end
 				end
 			end
 		end

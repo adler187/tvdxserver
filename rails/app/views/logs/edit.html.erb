@@ -1,0 +1,32 @@
+<h1>Editing log</h1>
+
+<% form_for(@log) do |f| %>
+  <%= f.error_messages %>
+
+  <p>
+    <%= f.label :signal_strength %><br />
+    <%= f.text_field :signal_strength %>
+  </p>
+  <p>
+    <%= f.label :signal_to_noise %><br />
+    <%= f.text_field :signal_to_noise %>
+  </p>
+  <p>
+    <%= f.label :signal_quality %><br />
+    <%= f.text_field :signal_quality %>
+  </p>
+  <p>
+    <%= f.label :station %><br />
+    <%= f.text_field :station %>
+  </p>
+  <p>
+    <%= f.label :tuner %><br />
+    <%= f.text_field :tuner %>
+  </p>
+  <p>
+    <%= f.submit 'Update' %>
+  </p>
+<% end %>
+
+<%= link_to 'Show', @log %> |
+<%= link_to 'Back', logs_path %>

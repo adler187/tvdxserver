@@ -1,0 +1,28 @@
+<p>
+  <b>Signal strength:</b>
+  <%=h @log.signal_strength %>
+</p>
+
+<p>
+  <b>Signal to noise:</b>
+  <%=h @log.signal_to_noise %>
+</p>
+
+<p>
+  <b>Signal quality:</b>
+  <%=h @log.signal_quality %>
+</p>
+
+<p>
+  <b>Station:</b>
+  <%=h @log.station %>
+</p>
+
+<p>
+  <b>Tuner:</b>
+  <%=h @log.tuner %>
+</p>
+
+
+<%= link_to 'Edit', edit_log_path(@log) %> |
+<%= link_to 'Back', logs_path %>

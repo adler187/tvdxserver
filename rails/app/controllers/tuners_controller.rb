@@ -5,8 +5,8 @@ class TunersController < ApplicationController
 		@tuners = Tuner.all
 
 		respond_to do |format|
-		format.html # index.html.erb
-		format.xml  { render :xml => @tuners }
+			format.html # index.html.erb
+			format.xml  { render :xml => @tuners }
 		end
 	end
 
@@ -16,8 +16,8 @@ class TunersController < ApplicationController
 		@tuner = Tuner.find(params[:id])
 
 		respond_to do |format|
-		format.html # show.html.erb
-		format.xml  { render :xml => @tuner }
+			format.html # show.html.erb
+			format.xml  { render :xml => @tuner }
 		end
 	end
 
@@ -28,8 +28,8 @@ class TunersController < ApplicationController
 		@tuner_info = @tuner.tuner_info.build
 
 		respond_to do |format|
-		format.html # new.html.erb
-		format.xml  { render :xml => @tuner }
+			format.html # new.html.erb
+			format.xml  { render :xml => @tuner }
 		end
 	end
 
@@ -41,16 +41,21 @@ class TunersController < ApplicationController
 	# POST /tuners
 	# POST /tuners.xml
 	def create
-		@tuner = Tuner.new(params[:tuner]	)
+		tuner_params = params[:tuner]
+		info_params = tuner_params[:tuner_info]
+		tuner_params.delete(:tuner_info)
+		
+		@tuner = Tuner.new(tuner_params)
+		@tuner_info = @tuner.tuner_info.build(info_params)
 
 		respond_to do |format|
-		if @tuner.save
-			format.html { redirect_to(@tuner, :notice => 'Tuner was successfully created.') }
-			format.xml  { render :xml => @tuner, :status => :created, :location => @tuner }
-		else
-			format.html { render :action => "new" }
-			format.xml  { render :xml => @tuner.errors, :status => :unprocessable_entity }
-		end
+			if @tuner.save
+				format.html { redirect_to(@tuner, :notice => 'Tuner was successfully created.') }
+				format.xml  { render :xml => @tuner, :status => :created, :location => @tuner }
+			else
+				format.html { render :action => "new" }
+				format.xml  { render :xml => @tuner.errors, :status => :unprocessable_entity }
+			end
 		end
 	end
 
@@ -58,19 +63,18 @@ class TunersController < ApplicationController
 	# PUT /tuners/1.xml
 	def update
 		@tuner = Tuner.find(params[:id])
-	# 	tuner_params = params[:tuner]
-	# 	tuner_info_params = tuner_params[:tuner][:tuner_info]
-	# 	tuner_params[:tuner].delete(:tuner_info)
-	# 	@tuner_info = @tuner.tuner_info.build
+		info_params = params[:tuner][:tuner_info]
+		
+		@tuner_info = @tuner.tuner_info.build(info_params)
 
 		respond_to do |format|
-		if @tuner.update_attributes(params[:tuner])
-			format.html { redirect_to(@tuner, :notice => 'Tuner was successfully updated.') }
-			format.xml  { head :ok }
-		else
-			format.html { render :action => "edit" }
-			format.xml  { render :xml => @tuner.errors, :status => :unprocessable_entity }
-		end
+			if @tuner_info.save
+				format.html { redirect_to(@tuner, :notice => 'Tuner was successfully updated.') }
+				format.xml  { head :ok }
+			else
+				format.html { render :action => "edit" }
+				format.xml  { render :xml => @tuner_info.errors, :status => :unprocessable_entity }
+			end
 		end
 	end
 
@@ -81,8 +85,8 @@ class TunersController < ApplicationController
 		@tuner.destroy
 
 		respond_to do |format|
-		format.html { redirect_to(tuners_url) }
-		format.xml  { head :ok }
+			format.html { redirect_to(tuners_url) }
+			format.xml  { head :ok }
 		end
 	end
 end
