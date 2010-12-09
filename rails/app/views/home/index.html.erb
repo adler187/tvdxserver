@@ -3,22 +3,24 @@
 	<%= hidden_field_tag 'location[latitude]', @map_location[:latitude] %>
 	<%= hidden_field_tag 'location[longitude]', @map_location[:longitude] %>
 	<%= hidden_field_tag 'zoom', @zoom %>
+	<%= label_tag 'tuner_id', 'Tuner:' %>
 	<%= collection_select(:tuner, :id, Tuner.all(:order => 'tuner_id'), :id, :name) %>
 	<%= submit_tag 'Go' %>
 <% end %>
 </div>
-<div id='logs'>
-<% if @logs.empty? %>
-<p>
-	There are no logs for this tuner
-</p>
-<% else %>
-<% @logs.each do |log| %>
-<%=h log.station.callsign %><br />
-<% end %>
-<% end %>
+<div id='content'>
+	<div id='map-wrapper'><div id='map'></div></div>
+	<div id='logs'>
+	<% if @logs.empty? %>
+		<p>
+			There are no logs for this tuner
+		</p>
+	<% else %>
+		<ul id='logs-list'>
+		<% @logs.each do |log| %>
+		<li><a href='#' onclick="markers['<%= log.station.callsign %>'].click()"><%=h log.station.callsign %></a></li>
+		<% end %>
+		</ul>
+	<% end %>
+	</div>
 </div>
-<div id='map_canvas'></div>
-<!--This will show a two-column page with a google map that maps which stations I have logged in a given period.
-
-Also have a link to the 'admin' controller to edit logs and things.-->

@@ -1,0 +1,52 @@
+html { overflow: hidden; }
+
+html, body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+}
+
+body { margin: 10px; }
+
+#content
+{
+	margin-top: 10px;
+}
+
+#map
+{
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	border: 1px solid #aaa;
+}
+
+#map-wrapper
+{
+	position: relative;
+	height: 100%;
+}
+
+#logs
+{
+	border: 1px solid #aaa;
+	width: 220px;
+	height: 100%;
+	overflow: auto;
+}
+
+#logs ul
+{
+	list-style: none;
+	padding-top: 6px;
+	margin: 0;
+}
+
+#logs ul#logs-list li
+{
+	padding: 2px 0px 2px 0px;
+}
+
+#map-wrapper { margin-left: 230px; } 

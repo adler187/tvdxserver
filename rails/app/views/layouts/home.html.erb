@@ -1,57 +1,46 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="content-type" content="text/html;charset=UTF-8" />
 	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
 	<title>Stations: <%= controller.action_name %></title>
 	<%= stylesheet_link_tag 'scaffold' %>
-	<style type="text/css">
-		html { height: 100% }
-		body { height: 100%; margin: 0px; padding: 0px }
-		#map_canvas { height: 100% }
-	</style>
+	<%= stylesheet_link_tag 'index' %>
 	<script type="text/javascript" src="http://maps.google.com/maps/api/js?sensor=false"></script>
+	<%= javascript_include_tag 'prototype' %>
 	<%= javascript_include_tag 'maps' %>
 	<script>
-function initialize()
-{
-	var mylatlng = new google.maps.LatLng(<%= SCAN_CONFIG['latitude'] %>, <%= SCAN_CONFIG['longitude'] %>);
-	var centerlatlng = new google.maps.LatLng(<%= @map_location['latitude'] %>, <%= @map_location['longitude'] %>);
-	var myOptions =
+	function initialize()
 	{
-		zoom: <%= @zoom %>,
-		center: centerlatlng,
-		disableDefaultUI: true,
-		mapTypeId: google.maps.MapTypeId.ROADMAP
-	};
-	map = new google.maps.Map(document.getElementById("map_canvas"), myOptions);
+		handleResize();
+		
+		var mylatlng = new google.maps.LatLng(<%= SCAN_CONFIG['latitude'] %>, <%= SCAN_CONFIG['longitude'] %>);
+		var centerlatlng = new google.maps.LatLng(<%= @map_location['latitude'] %>, <%= @map_location['longitude'] %>);
+		var myOptions =
+		{
+			zoom: <%= @zoom %>,
+			center: centerlatlng,
+			disableDefaultUI: true,
+			mapTypeId: google.maps.MapTypeId.ROADMAP
+		};
+		map = new google.maps.Map(document.getElementById("map"), myOptions);
 
-	google.maps.event.addListener(map, 'click', function() {
-		clearActive();
-		clearMoved();
-	});
+		google.maps.event.addListener(map, 'click', function()
+		{
+			clearActive();
+// 			clearMoved();
+		});
 
-	google.maps.event.addListener(map, 'zoom_changed', function() {
-		document.getElementById('zoom').value = map.getZoom();
-	});
+		google.maps.event.addListener(map, 'zoom_changed', function() {
+			document.getElementById('zoom').value = map.getZoom();
+		});
 
-	google.maps.event.addListener(map, 'center_changed', function() {
-		var center = map.getCenter();
+		google.maps.event.addListener(map, 'center_changed', function() {
+			var center = map.getCenter();
 
-		document.getElementById('location_latitude').value = center.lat();
-		document.getElementById('location_longitude').value = center.lng();
-	});
-
-	google.maps.event.addListener(map, 'zoom_changed', function() {
-		var zoom = map.getZoom();
-		if(zoom < 8) map.setZoom(8);
-	});
-
-<% i=0 %>
-<% @logs.each do |log| %>
-<% station = log.station %>
+			document.getElementById('location_latitude').value = center.lat();
+			document.getElementById('location_longitude').value = center.lng();
+		});
 <%
 	def get_marker_image(ss)
 		if ss > 70
@@ -62,9 +51,29 @@ function initialize()
 			return "http://maps.gstatic.com/intl/en_us/mapfiles/ms/micons/red-dot.png";
 		end
 	end
+
+	def info_window(log)
+		station = log.station
+		window = Hash.new
+
+		content = station.callsign + "<br /><hr>\nLast received on " + log.created_at.to_s + '<br />'
+		content += 'Channel: ' + station.rf.to_s + '<br />'
+		content += 'Distance: ' + station.distance.round(2).to_s + ' mi<br />'
+		content += 'Most recent scan: <br />'
+		content += 'Signal Strength: ' + log.signal_strength.to_s + '<br />'
+		content += 'Signal to Noize: ' + log.signal_to_noise.to_s + '<br />'
+		content += 'Signal Quality: ' + log.signal_quality.to_s + '<br />'
+		
+		window['content'] = content
+
+		return window.to_json
+	end
 %>
 
-markers[<%= i %>] = new google.maps.Marker(
+<% @logs.each do |log| %>
+<% station = log.station %>
+
+var marker = new google.maps.Marker(
 {
 	position: new google.maps.LatLng(<%= station.latitude %>, <%= station.longitude %>),
 	map: map,
@@ -75,37 +84,34 @@ markers[<%= i %>] = new google.maps.Marker(
 	icon: '<%= get_marker_image(log.signal_strength) %>'
 });
 
-infowindows[<%= i %>] = new google.maps.InfoWindow({
-	content: '<%= station.callsign %><br />' +
-	'<hr>' +
-	'Last received on <br />' +
-	'Channel: <%= station.rf %><br />' +
-	'Distance: <%= station.distance %> miles<br />' +
-	'Most recent scan:<br />' +
-	'Signal Strength: <%= log.signal_strength %><br />' +
-	'Signal Quality: <%= log.signal_to_noise %><br />' +
-	'Symbol Quality: <%= log.signal_quality %><br />' +
-	'<br />' +
-// 	'<a href=\"plot.php?id=$id&tuner={$tuner->id}\" target=\"_blank\">Signal Graph</a><br />' +
-	'<a href=\"http://rabbitears.info/market.php?request=station_search&callsign=<%= station.callsign %>#station\" target=\"_blank\">RabbitEars lookup</a>'
-});
+// infowindows['<%= station.callsign %>']
+marker.infoWindow = new google.maps.InfoWindow(<%= info_window(log) %>);
 
-markers[<%= i %>].click = function()
+marker.infoWindow.realClose = function()
 {
-	// 	map.setCenter(new google.maps.LatLng($latitude, $longitude));
+	this.close();
+}
+
+active=undefined;
+marker.click = function()
+{
+	// clear any active
 	clearActive();
-	active=<%= i %>
-	checkMove();
-	markers[<%= i %>].setZIndex(2);
-	infowindows[<%= i %>].open(map, markers[<%= i %>]);
+	
+	active=marker;
+	this.setZIndex(2);
+	this.infoWindow.open(map, this);
 };
 
-google.maps.event.addListener(markers[<%= i %>], 'click', markers[<%= i %>].click);
+google.maps.event.addListener(marker, 'click', marker.click);
 
-addPoint(markers[<%= i %>]);
-<% i += 1 %>
+addPoint(marker);
+
+markers['<%= station.callsign %>'] = marker
+
 <% end %>
 }
+
 </script>
 </head>
 <body onload='initialize()'>
