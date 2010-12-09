@@ -10,6 +10,7 @@
 	<%= javascript_include_tag 'prototype' %>
 	<%= javascript_include_tag 'maps' %>
 	<script>
+	
 	function initialize()
 	{
 		handleResize();
@@ -23,7 +24,7 @@
 			disableDefaultUI: true,
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		};
-		map = new google.maps.Map(document.getElementById("map"), myOptions);
+		var map = new google.maps.Map(document.getElementById("map"), myOptions);
 
 		google.maps.event.addListener(map, 'click', function()
 		{
@@ -31,7 +32,7 @@
 // 			clearMoved();
 		});
 
-		google.maps.event.addListener(map, 'zoom_changed', function() {
+		google.maps.event.addListener(map, 'zoom_changed', function(){
 			document.getElementById('zoom').value = map.getZoom();
 		});
 
@@ -70,44 +71,29 @@
 	end
 %>
 
+		var marker;
+		
 <% @logs.each do |log| %>
 <% station = log.station %>
 
-var marker = new google.maps.Marker(
-{
-	position: new google.maps.LatLng(<%= station.latitude %>, <%= station.longitude %>),
-	map: map,
-	draggable: false,
-	clickable: true,
-	title:'<%= station.callsign %>',
-	zIndex: 0,
-	icon: '<%= get_marker_image(log.signal_strength) %>'
-});
+		marker = new google.maps.Marker(
+		{
+			position: new google.maps.LatLng(<%= station.latitude %>, <%= station.longitude %>),
+			map: map,
+			draggable: false,
+			clickable: true,
+			title:'<%= station.callsign %>',
+			zIndex: 0,
+			icon: '<%= get_marker_image(log.signal_strength) %>'
+		});
 
-// infowindows['<%= station.callsign %>']
-marker.infoWindow = new google.maps.InfoWindow(<%= info_window(log) %>);
+		marker.infoWindow = new google.maps.InfoWindow(<%= info_window(log) %>);
 
-marker.infoWindow.realClose = function()
-{
-	this.close();
-}
+		marker.click = markerClick(marker);
 
-active=undefined;
-marker.click = function()
-{
-	// clear any active
-	clearActive();
-	
-	active=marker;
-	this.setZIndex(2);
-	this.infoWindow.open(map, this);
-};
+		google.maps.event.addListener(marker, 'click', marker.click);
 
-google.maps.event.addListener(marker, 'click', marker.click);
-
-addPoint(marker);
-
-markers['<%= station.callsign %>'] = marker
+		markers['<%= station.callsign %>'] = marker
 
 <% end %>
 }

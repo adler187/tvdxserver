@@ -1,16 +1,29 @@
+active = undefined;
 markers = new Hash();
-infowindows = new Hash();
-markerpoints = new Array();
-movedmarkers = new Array();
-lines = new Array();
-maxZindex = 0;
-oldZindex = 0;
+// infowindows = new Hash();
+// markerpoints = new Array();
+// movedmarkers = new Array();
+// lines = new Array();
+// maxZindex = 0;
+// oldZindex = 0;
+
+function markerClick(m)
+{
+	return (function()
+	{
+		clearActive();
+		active = m;
+
+		m.setZIndex(2);
+		m.infoWindow.open(m.getMap(), m);
+	});
+}
 
 function clearActive()
 {
 	if(typeof active !== 'undefined')
 	{
-		active.infoWindow.realClose();
+		active.infoWindow.close();
 	}
 }
 
