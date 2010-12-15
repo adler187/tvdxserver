@@ -7,7 +7,7 @@ class HomeController < ApplicationController
 		@logs = Log.all(:joins => ', stations', :select => 'logs.*, stations.*, max(logs.created_at) as log_time', :conditions => ['stations.id = logs.station_id and tuner_id = ?', @tuner.id], :group => 'callsign')
 # 		@logs = Log.all
 # 		if params[:location].nil?
-			@map_location = { 'latitude' => SCAN_CONFIG['latitude'], 'longitude' => SCAN_CONFIG['longitude'] }
+			@map_location = { 'latitude' => CONFIG['latitude'], 'longitude' => CONFIG['longitude'] }
 # 		else
 # 			@map_location = params[:location]
 # 		end
