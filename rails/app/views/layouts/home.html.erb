@@ -13,9 +13,10 @@
 	
 	function initialize()
 	{
+
 		handleResize();
 		
-		var centerlatlng = new google.maps.LatLng(<%= @map_location['latitude'] %>, <%= @map_location['longitude'] %>);
+		var centerlatlng = new google.maps.LatLng(<%= @map_location[:latitude] %>, <%= @map_location[:longitude] %>);
 		var myOptions =
 		{
 			zoom: <%= @zoom %>,
