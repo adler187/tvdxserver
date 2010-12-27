@@ -12,9 +12,11 @@ class HomeController < ApplicationController
 		
 
 		if params[:zoom].nil?
-			@zoom = params[:zoom]
-		else
 			@zoom = 8
+		else
+			@zoom = params[:zoom]
 		end
+
+		p "Zoom is ", @zoom
 	end
 end
