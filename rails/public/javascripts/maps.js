@@ -68,7 +68,7 @@ google.maps.Map.prototype.removeMarkers = function()
 {
 	this.clearMarkers();
 
-	markers.length = 0;
+	this.markers.length = 0;
 }
 
 function get_marker_image(ss)
