@@ -22,6 +22,7 @@ google.maps.Map.prototype.clearActiveMarker = function()
 	if(typeof this.activeMarker !== 'undefined')
 	{
 		this.activeMarker.infoWindow.close();
+		this.activeMarker.setZIndex(0);
 	}
 }
 
@@ -30,6 +31,162 @@ google.maps.Map.prototype.setActiveMarker = function(marker)
 	this.clearActiveMarker();
 
 	this.activeMarker = marker;
+}
+
+google.maps.Map.prototype.addMarker = function(object)
+{
+	object.map = this;
+
+	var marker =  new google.maps.Marker(object);
+	
+	if(typeof this.markers === 'undefined')
+	{
+		this.markers = Array();
+	}
+
+	this.markers.push(marker);
+	
+	return marker;
+}
+
+google.maps.Map.prototype.clearMarkers = function()
+{
+	if(typeof this.markers === 'undefined')
+	{
+		this.markers = [];
+	}
+	
+	for(var i = 0; i < this.markers.length; i++)
+	{
+		this.markers[i].setMap(null);
+	}
+}
+
+google.maps.Map.prototype.removeMarkers = function()
+{
+	this.clearMarkers();
+
+	markers.length = 0;
+}
+
+function get_marker_image(ss)
+{
+	if (ss > 70)
+		return "http://maps.gstatic.com/intl/en_us/mapfiles/ms/micons/green-dot.png";
+	else if (ss > 50)
+		return "http://maps.gstatic.com/intl/en_us/mapfiles/ms/micons/yellow-dot.png";
+	else
+		return "http://maps.gstatic.com/intl/en_us/mapfiles/ms/micons/red-dot.png";
+}
+
+function info_window(station)
+{
+	content = station.callsign + "<br /><hr>\nLast received on " + station.created_at + '<br />';
+	content += 'Channel: ' + station.rf + '<br />';
+	content += 'Distance: ' + Math.round(station.distance * 100) / 100 + ' mi<br />';
+	content += 'Most recent scan: <br />';
+	content += 'Signal Strength: ' + station.signal_strength + '<br />';
+	content += 'Signal to Noize: ' + station.signal_to_noise + '<br />';
+	content += 'Signal Quality: ' + station.signal_quality + '<br />';
+	
+	return { content: content };
+}
+
+function initialize(latitude, longitude, zoom)
+{
+	handleResize();
+
+	var centerlatlng = new google.maps.LatLng(latitude, longitude);
+	var myOptions =
+	{
+		zoom: zoom,
+		center: centerlatlng,
+		disableDefaultUI: true,
+		mapTypeId: google.maps.MapTypeId.ROADMAP
+	};
+	
+	map = new google.maps.Map(document.getElementById("map"), myOptions);
+
+	google.maps.event.addListener(map, 'click', function()
+	{
+		map.clearActive();
+// 			clearMoved();
+	});
+
+	google.maps.event.addListener(map, 'zoom_changed', function(){
+		document.getElementById('zoom').value = map.getZoom();
+	});
+
+	google.maps.event.addListener(map, 'center_changed', function() {
+		var center = map.getCenter();
+
+		document.getElementById('location_latitude').value = center.lat();
+		document.getElementById('location_longitude').value = center.lng();
+	});
+
+	addMarkers();
+}
+
+function removeMarkers()
+{
+	document.getElementById('logs-list').innerHTML = '';
+	map.removeMarkers();
+}
+
+function addMarkers(tuner)
+{
+	var tuner_select = document.getElementById('tuner_id');
+	new Ajax.Request
+	(
+		'/home.json',
+		{
+			method:'get',
+			parameters: { 'tuner[id]' : tuner_select.options[tuner_select.selectedIndex].value },
+			onSuccess: function(transport)
+			{
+				var list = document.getElementById('logs-list');
+				
+				var json = transport.responseText.evalJSON();
+				for(var i = 0; i < json.length; i++)
+				{
+					var station = json[i].log;
+					
+					var marker = map.addMarker
+					(
+						{
+							position: new google.maps.LatLng(station.latitude, station.longitude),
+							draggable: false,
+							clickable: true,
+							title: station.callsign,
+							zIndex: 0,
+							icon: get_marker_image(station.signal_strength),
+							infoWindow: new google.maps.InfoWindow(info_window(station))
+						}
+					);
+					
+					google.maps.event.addListener(marker, 'click', marker.click);
+					
+					var item = document.createElement('span');
+					item.innerHTML = station.callsign;
+					
+					item.marker = marker;
+					item.className = 'clickable';
+					
+					item.onclick = function()
+					{
+						this.marker.click();
+					};
+					
+					var list_item = document.createElement('li');
+					list_item.appendChild(item);
+					
+					list.appendChild(list_item);
+				}
+				
+			},
+			onFailure: function(){ alert('Something went wrong...') }
+		}
+	);
 }
 
 function addPoint(marker)

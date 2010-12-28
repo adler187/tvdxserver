@@ -49,4 +49,9 @@ body { margin: 10px; }
 	padding: 2px 0px 2px 0px;
 }
 
-#map-wrapper { margin-left: 230px; } 
+#map-wrapper { margin-left: 230px; }
+
+.clickable
+{
+	cursor: pointer;
+}
