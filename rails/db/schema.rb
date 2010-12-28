@@ -12,9 +12,9 @@
 ActiveRecord::Schema.define(:version => 20101228045400) do
 
   create_table "logs", :force => true do |t|
-    t.integer  "signal_strength", :limit => 4
-    t.integer  "signal_to_noise", :limit => 4
-    t.integer  "signal_quality",  :limit => 4
+    t.integer  "signal_strength"
+    t.integer  "signal_to_noise"
+    t.integer  "signal_quality"
     t.integer  "station_id"
     t.integer  "tuner_id"
     t.datetime "created_at"
@@ -25,19 +25,17 @@ ActiveRecord::Schema.define(:version => 20101228045400) do
     t.string  "tsid",            :limit => 6
     t.string  "callsign",        :limit => 10
     t.string  "parent_callsign", :limit => 7
-    t.integer "rf",              :limit => 4
-    t.integer "display",         :limit => 4
+    t.integer "rf"
+    t.integer "display"
     t.decimal "latitude",                      :precision => 6, :scale => 4
     t.decimal "longitude",                     :precision => 6, :scale => 4
     t.decimal "distance",                      :precision => 5, :scale => 1
   end
 
   create_table "time_intervals", :force => true do |t|
-    t.string   "description", :limit => 10
-    t.integer  "interval"
-    t.string   "unit"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.integer "interval"
+    t.string  "unit",        :limit => 10
+    t.string  "description", :limit => 20
   end
 
   create_table "tuner_infos", :force => true do |t|
