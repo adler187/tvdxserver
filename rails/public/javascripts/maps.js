@@ -1,4 +1,3 @@
-active = undefined;
 markers = new Hash();
 // infowindows = new Hash();
 // markerpoints = new Array();
@@ -7,24 +6,30 @@ markers = new Hash();
 // maxZindex = 0;
 // oldZindex = 0;
 
-function markerClick(m)
+google.maps.Marker.prototype.click = function()
 {
-	return (function()
+	var map = this.getMap();
+	if(map.activeMarker != this)
 	{
-		clearActive();
-		active = m;
+		map.setActiveMarker(this);
+		this.setZIndex(2);
+		this.infoWindow.open(this.getMap(), this);
+	}
+};
 
-		m.setZIndex(2);
-		m.infoWindow.open(m.getMap(), m);
-	});
+google.maps.Map.prototype.clearActiveMarker = function()
+{
+	if(typeof this.activeMarker !== 'undefined')
+	{
+		this.activeMarker.infoWindow.close();
+	}
 }
 
-function clearActive()
+google.maps.Map.prototype.setActiveMarker = function(marker)
 {
-	if(typeof active !== 'undefined')
-	{
-		active.infoWindow.close();
-	}
+	this.clearActiveMarker();
+
+	this.activeMarker = marker;
 }
 
 function addPoint(marker)

@@ -15,5 +15,10 @@ class HomeController < ApplicationController
 		else
 			@zoom = params[:zoom]
 		end
+		
+		respond_to do |format|
+			format.html # index.html.erb
+			format.json  { render :json => @logs }
+		end
 	end
 end

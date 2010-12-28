@@ -24,11 +24,11 @@
 			disableDefaultUI: true,
 			mapTypeId: google.maps.MapTypeId.ROADMAP
 		};
-		var map = new google.maps.Map(document.getElementById("map"), myOptions);
+		map = new google.maps.Map(document.getElementById("map"), myOptions);
 
 		google.maps.event.addListener(map, 'click', function()
 		{
-			clearActive();
+			map.clearActive();
 // 			clearMoved();
 		});
 
@@ -42,60 +42,76 @@
 			document.getElementById('location_latitude').value = center.lat();
 			document.getElementById('location_longitude').value = center.lng();
 		});
-<%
-	def get_marker_image(ss)
-		if ss > 70
-			return "http://maps.gstatic.com/intl/en_us/mapfiles/ms/micons/green-dot.png";
-		elsif ss > 50
-			return "http://maps.gstatic.com/intl/en_us/mapfiles/ms/micons/yellow-dot.png";
-		else
-			return "http://maps.gstatic.com/intl/en_us/mapfiles/ms/micons/red-dot.png";
-		end
-	end
 
-	def info_window(log)
-		station = log.station
-		window = Hash.new
-
-		content = station.callsign + "<br /><hr>\nLast received on " + log.created_at.to_s + '<br />'
-		content += 'Channel: ' + station.rf.to_s + '<br />'
-		content += 'Distance: ' + station.distance.round(2).to_s + ' mi<br />'
-		content += 'Most recent scan: <br />'
-		content += 'Signal Strength: ' + log.signal_strength.to_s + '<br />'
-		content += 'Signal to Noize: ' + log.signal_to_noise.to_s + '<br />'
-		content += 'Signal Quality: ' + log.signal_quality.to_s + '<br />'
-		
-		window['content'] = content
-
-		return window.to_json
-	end
-%>
-
-		var marker;
-		
-<% @logs.each do |log| %>
-<% station = log.station %>
-
-		marker = new google.maps.Marker(
+		function get_marker_image(ss)
 		{
-			position: new google.maps.LatLng(<%= station.latitude %>, <%= station.longitude %>),
-			map: map,
-			draggable: false,
-			clickable: true,
-			title:'<%= station.callsign %>',
-			zIndex: 0,
-			icon: '<%= get_marker_image(log.signal_strength) %>'
+			if (ss > 70)
+				return "http://maps.gstatic.com/intl/en_us/mapfiles/ms/micons/green-dot.png";
+			else if (ss > 50)
+				return "http://maps.gstatic.com/intl/en_us/mapfiles/ms/micons/yellow-dot.png";
+			else
+				return "http://maps.gstatic.com/intl/en_us/mapfiles/ms/micons/red-dot.png";
+		}
+
+		function info_window(station)
+		{
+			content = station.callsign + "<br /><hr>\nLast received on " + station.created_at + '<br />';
+			content += 'Channel: ' + station.rf + '<br />';
+			content += 'Distance: ' + Math.round(station.distance * 100) / 100 + ' mi<br />';
+			content += 'Most recent scan: <br />';
+			content += 'Signal Strength: ' + station.signal_strength + '<br />';
+			content += 'Signal to Noize: ' + station.signal_to_noise + '<br />';
+			content += 'Signal Quality: ' + station.signal_quality + '<br />';
+
+			return { content: content };
+		}
+
+		var tuner_select = document.getElementById('tuner_id');
+		console.debug(tuner_select.options[tuner_select.selectedIndex].value);
+		new Ajax.Request('/home.json', {
+			method:'get',
+			parameters: { 'tuner[id]' : tuner_select.options[tuner_select.selectedIndex].value },
+			onSuccess: function(transport)
+			{
+				var list = document.getElementById('logs-list');
+				
+				var json = transport.responseText.evalJSON();
+				for(var i = 0; i < json.length; i++)
+				{
+					var station = json[i].log;
+					var marker = new google.maps.Marker(
+					{
+						position: new google.maps.LatLng(station.latitude, station.longitude),
+						map: map,
+						draggable: false,
+						clickable: true,
+						title: station.callsign,
+						zIndex: 0,
+						icon: get_marker_image(station.signal_strength)
+					});
+
+					marker.infoWindow = new google.maps.InfoWindow(info_window(station));
+					
+					google.maps.event.addListener(marker, 'click', marker.click);
+					
+					markers[station.callsign] = marker
+
+					item = document.createElement('li');
+					item.innerHTML = station.callsign;
+					
+					item.onclick = function()
+					{
+						markers[this.innerHTML].click();
+					};
+					console.debug(item.onclick);
+					list.appendChild(item);
+				}
+
+			},
+			onFailure: function(){ alert('Something went wrong...') }
 		});
 
-		marker.infoWindow = new google.maps.InfoWindow(<%= info_window(log) %>);
 
-		marker.click = markerClick(marker);
-
-		google.maps.event.addListener(marker, 'click', marker.click);
-
-		markers['<%= station.callsign %>'] = marker
-
-<% end %>
 }
 
 </script>
