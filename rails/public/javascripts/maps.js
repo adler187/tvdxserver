@@ -113,17 +113,6 @@ function initialize(latitude, longitude, zoom)
 // 			clearMoved();
 	});
 
-	google.maps.event.addListener(map, 'zoom_changed', function(){
-		document.getElementById('zoom').value = map.getZoom();
-	});
-
-	google.maps.event.addListener(map, 'center_changed', function() {
-		var center = map.getCenter();
-
-		document.getElementById('location_latitude').value = center.lat();
-		document.getElementById('location_longitude').value = center.lng();
-	});
-
 	addMarkers();
 }
 
