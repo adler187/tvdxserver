@@ -285,9 +285,6 @@ def scan(tuner_config)
 				end
 
 				if (true || distance > DX_DISTANCE || new_station)
-					# TODO: Create a log result here using Log model
-# 						log = Log.create
-# 					p result
 					status = result['status']
 					result_log = Log.create(
 						:signal_strength => status['ss'],
