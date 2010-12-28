@@ -55,6 +55,8 @@ google.maps.Map.prototype.clearMarkers = function()
 	{
 		this.markers = [];
 	}
+
+	this.clearActiveMarker();
 	
 	for(var i = 0; i < this.markers.length; i++)
 	{
@@ -110,7 +112,6 @@ function initialize(latitude, longitude, zoom)
 	google.maps.event.addListener(map, 'click', function()
 	{
 		map.clearActive();
-// 			clearMoved();
 	});
 
 	addMarkers();
