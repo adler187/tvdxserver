@@ -9,7 +9,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20101204211932) do
+ActiveRecord::Schema.define(:version => 20101228045400) do
 
   create_table "logs", :force => true do |t|
     t.integer  "signal_strength", :limit => 4
@@ -30,6 +30,14 @@ ActiveRecord::Schema.define(:version => 20101204211932) do
     t.decimal "latitude",                      :precision => 6, :scale => 4
     t.decimal "longitude",                     :precision => 6, :scale => 4
     t.decimal "distance",                      :precision => 5, :scale => 1
+  end
+
+  create_table "time_intervals", :force => true do |t|
+    t.string   "description", :limit => 10
+    t.integer  "interval"
+    t.string   "unit"
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
   create_table "tuner_infos", :force => true do |t|

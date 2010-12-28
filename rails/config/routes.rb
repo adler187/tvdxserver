@@ -1,4 +1,6 @@
 ActionController::Routing::Routes.draw do |map|
+  map.resources :time_intervals
+
   map.resources :logs
 
   map.resources :tuners

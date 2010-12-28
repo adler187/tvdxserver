@@ -1,0 +1,18 @@
+<p>
+  <b>Interval:</b>
+  <%=h @time_interval.interval %>
+</p>
+
+<p>
+  <b>Unit:</b>
+  <%=h @time_interval.unit %>
+</p>
+
+<p>
+  <b>Description:</b>
+  <%=h @time_interval.description %>
+</p>
+
+
+<%= link_to 'Edit', edit_time_interval_path(@time_interval) %> |
+<%= link_to 'Back', time_intervals_path %>

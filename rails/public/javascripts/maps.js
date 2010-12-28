@@ -126,12 +126,13 @@ function removeMarkers()
 function addMarkers(tuner)
 {
 	var tuner_select = document.getElementById('tuner_id');
+	var time_interval_select = document.getElementById('time_interval_id');
 	new Ajax.Request
 	(
 		'/home.json',
 		{
 			method:'get',
-			parameters: { 'tuner[id]' : tuner_select.options[tuner_select.selectedIndex].value },
+			parameters: $('options_form').serialize(true),
 			onSuccess: function(transport)
 			{
 				var list = document.getElementById('logs-list');
