@@ -1,28 +1,26 @@
-markers = new Hash();
-// infowindows = new Hash();
-// markerpoints = new Array();
-// movedmarkers = new Array();
-// lines = new Array();
-// maxZindex = 0;
-// oldZindex = 0;
 
 google.maps.Marker.prototype.click = function()
 {
 	var map = this.getMap();
-	if(map.activeMarker != this)
+	if(map.activeMarker != this || !this.isOpen)
 	{
 		map.setActiveMarker(this);
 		this.setZIndex(2);
 		this.infoWindow.open(this.getMap(), this);
+		this.isOpen = true;
 	}
 };
 
 google.maps.Map.prototype.clearActiveMarker = function()
 {
+	console.debug('clearActiveMarker');
+	console.debug(this);
+	
 	if(typeof this.activeMarker !== 'undefined')
 	{
 		this.activeMarker.infoWindow.close();
 		this.activeMarker.setZIndex(0);
+		this.activeMarker.isOpen = false;
 	}
 }
 
@@ -38,6 +36,8 @@ google.maps.Map.prototype.addMarker = function(object)
 	object.map = this;
 
 	var marker =  new google.maps.Marker(object);
+
+	marker.isOpen = false
 	
 	if(typeof this.markers === 'undefined')
 	{
@@ -107,11 +107,11 @@ function initialize(latitude, longitude, zoom)
 		mapTypeId: google.maps.MapTypeId.ROADMAP
 	};
 	
-	map = new google.maps.Map(document.getElementById("map"), myOptions);
+	map = new google.maps.Map($("map"), myOptions);
 
 	google.maps.event.addListener(map, 'click', function()
 	{
-		map.clearActive();
+		map.clearActiveMarker();
 	});
 
 	addMarkers();
@@ -119,14 +119,14 @@ function initialize(latitude, longitude, zoom)
 
 function removeMarkers()
 {
-	document.getElementById('logs-list').innerHTML = '';
+	$('logs-list').innerHTML = '';
 	map.removeMarkers();
 }
 
 function addMarkers(tuner)
 {
-	var tuner_select = document.getElementById('tuner_id');
-	var time_interval_select = document.getElementById('time_interval_id');
+	var tuner_select = $('tuner_id');
+	var time_interval_select = $('time_interval_id');
 	new Ajax.Request
 	(
 		'/home.json',
@@ -135,12 +135,16 @@ function addMarkers(tuner)
 			parameters: $('options_form').serialize(true),
 			onSuccess: function(transport)
 			{
-				var list = document.getElementById('logs-list');
+				var list = $('logs-list');
 				
 				var json = transport.responseText.evalJSON();
 				for(var i = 0; i < json.length; i++)
 				{
 					var station = json[i].log;
+
+					var infoWindow = new google.maps.InfoWindow(info_window(station));
+
+					google.maps.event.addListener(infoWindow, 'closeclick', map.clearActiveMarker.bind(map));
 					
 					var marker = map.addMarker
 					(
@@ -151,7 +155,7 @@ function addMarkers(tuner)
 							title: station.callsign,
 							zIndex: 0,
 							icon: get_marker_image(station.signal_strength),
-							infoWindow: new google.maps.InfoWindow(info_window(station))
+							infoWindow: infoWindow
 						}
 					);
 					
@@ -160,13 +164,9 @@ function addMarkers(tuner)
 					var item = document.createElement('span');
 					item.innerHTML = station.callsign;
 					
-					item.marker = marker;
 					item.className = 'clickable';
 					
-					item.onclick = function()
-					{
-						this.marker.click();
-					};
+					item.onclick = marker.click.bind(marker);
 					
 					var list_item = document.createElement('li');
 					list_item.appendChild(item);
@@ -267,9 +267,9 @@ function checkMove()
 
 function handleResize()
 {
-	var height = self.innerHeight - document.getElementById('top').offsetHeight - 30;
-	document.getElementById('map').style.height = height + 'px';
-	document.getElementById('logs').style.height = height + 'px';
+	var height = self.innerHeight - $('top').offsetHeight - 30;
+	$('map').style.height = height + 'px';
+	$('logs').style.height = height + 'px';
 }
 
 window.onresize = handleResize;
