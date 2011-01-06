@@ -1,4 +1,9 @@
+// Additions to the standard Google Maps APIs
 
+// specifies whether a map marker is open or not
+google.maps.Marker.prototype.isOpen = false;
+
+// When a marker is clicked, display its InfoWindow and raise it up
 google.maps.Marker.prototype.click = function()
 {
 	var map = this.getMap();
@@ -11,12 +16,16 @@ google.maps.Marker.prototype.click = function()
 	}
 };
 
+// keep track of the markers on the map
+google.maps.Map.prototype.markers = Array();
+
+// keep track of which marker is active, so we can close it when another is clicked
+google.maps.Map.prototype.activeMarker = false;
+
+// close the active marker's InfoWindow if there is one (reverse of Marker.click())
 google.maps.Map.prototype.clearActiveMarker = function()
 {
-	console.debug('clearActiveMarker');
-	console.debug(this);
-	
-	if(typeof this.activeMarker !== 'undefined')
+	if(this.activeMarker)
 	{
 		this.activeMarker.infoWindow.close();
 		this.activeMarker.setZIndex(0);
@@ -24,6 +33,7 @@ google.maps.Map.prototype.clearActiveMarker = function()
 	}
 }
 
+// set the active marker to marker, clearing the previous
 google.maps.Map.prototype.setActiveMarker = function(marker)
 {
 	this.clearActiveMarker();
@@ -31,31 +41,21 @@ google.maps.Map.prototype.setActiveMarker = function(marker)
 	this.activeMarker = marker;
 }
 
+// Add a marker to the map. Wraps the marker constructor and adds it to the map's marker list
 google.maps.Map.prototype.addMarker = function(object)
 {
 	object.map = this;
 
 	var marker =  new google.maps.Marker(object);
 
-	marker.isOpen = false
-	
-	if(typeof this.markers === 'undefined')
-	{
-		this.markers = Array();
-	}
-
 	this.markers.push(marker);
 	
 	return marker;
 }
 
+// Clear all markers from the map
 google.maps.Map.prototype.clearMarkers = function()
 {
-	if(typeof this.markers === 'undefined')
-	{
-		this.markers = [];
-	}
-
 	this.clearActiveMarker();
 	
 	for(var i = 0; i < this.markers.length; i++)
@@ -64,6 +64,7 @@ google.maps.Map.prototype.clearMarkers = function()
 	}
 }
 
+// Remove references to the markers contained in the map, deleting them
 google.maps.Map.prototype.removeMarkers = function()
 {
 	this.clearMarkers();
@@ -71,117 +72,9 @@ google.maps.Map.prototype.removeMarkers = function()
 	this.markers.length = 0;
 }
 
-function get_marker_image(ss)
-{
-	if (ss > 70)
-		return "http://maps.gstatic.com/intl/en_us/mapfiles/ms/micons/green-dot.png";
-	else if (ss > 50)
-		return "http://maps.gstatic.com/intl/en_us/mapfiles/ms/micons/yellow-dot.png";
-	else
-		return "http://maps.gstatic.com/intl/en_us/mapfiles/ms/micons/red-dot.png";
-}
 
-function info_window(station)
-{
-	content = station.callsign + "<br /><hr>\nLast received on " + station.created_at + '<br />';
-	content += 'Channel: ' + station.rf + '<br />';
-	content += 'Distance: ' + Math.round(station.distance * 100) / 100 + ' mi<br />';
-	content += 'Most recent scan: <br />';
-	content += 'Signal Strength: ' + station.signal_strength + '<br />';
-	content += 'Signal to Noize: ' + station.signal_to_noise + '<br />';
-	content += 'Signal Quality: ' + station.signal_quality + '<br />';
-	
-	return { content: content };
-}
-
-function initialize(latitude, longitude, zoom)
-{
-	handleResize();
-
-	var centerlatlng = new google.maps.LatLng(latitude, longitude);
-	var myOptions =
-	{
-		zoom: zoom,
-		center: centerlatlng,
-		disableDefaultUI: true,
-		mapTypeId: google.maps.MapTypeId.ROADMAP
-	};
-	
-	map = new google.maps.Map($("map"), myOptions);
-
-	google.maps.event.addListener(map, 'click', function()
-	{
-		map.clearActiveMarker();
-	});
-
-	addMarkers();
-}
-
-function removeMarkers()
-{
-	$('logs-list').innerHTML = '';
-	map.removeMarkers();
-}
-
-function addMarkers(tuner)
-{
-	var tuner_select = $('tuner_id');
-	var time_interval_select = $('time_interval_id');
-	new Ajax.Request
-	(
-		'/home.json',
-		{
-			method:'get',
-			parameters: $('options_form').serialize(true),
-			onSuccess: function(transport)
-			{
-				var list = $('logs-list');
-				
-				var json = transport.responseText.evalJSON();
-				for(var i = 0; i < json.length; i++)
-				{
-					var station = json[i].log;
-
-					var infoWindow = new google.maps.InfoWindow(info_window(station));
-
-					google.maps.event.addListener(infoWindow, 'closeclick', map.clearActiveMarker.bind(map));
-					
-					var marker = map.addMarker
-					(
-						{
-							position: new google.maps.LatLng(station.latitude, station.longitude),
-							draggable: false,
-							clickable: true,
-							title: station.callsign,
-							zIndex: 0,
-							icon: get_marker_image(station.signal_strength),
-							infoWindow: infoWindow
-						}
-					);
-					
-					google.maps.event.addListener(marker, 'click', marker.click);
-					
-					var item = document.createElement('span');
-					item.innerHTML = station.callsign;
-					
-					item.className = 'clickable';
-					
-					item.onclick = marker.click.bind(marker);
-					
-					var list_item = document.createElement('li');
-					list_item.appendChild(item);
-					
-					list.appendChild(list_item);
-				}
-				
-			},
-			onFailure: function(){ alert('Something went wrong...') }
-		}
-	);
-}
-
-function addPoint(marker)
-{
+// function addPoint(marker)
+// {
 // 	var position = marker.getPosition();
 // 	var lat = position.lat();
 // 	var long = position.lng();
@@ -196,10 +89,10 @@ function addPoint(marker)
 // 	}
 // 
 // 	markerpoints[lat][long].push(marker);
-}
+// }
 
-function moveMarker(marker, degree, distance)
-{
+// function moveMarker(marker, degree, distance)
+// {
 // 		var R = 6371; // km
 // 		var dLat = (lat2-lat1).toRad();
 // 		var dLon = (lon2-lon1).toRad();
@@ -219,10 +112,10 @@ function moveMarker(marker, degree, distance)
 // 	});
 // 	lines.push(line);
 // 	line.setMap(map);
-}
+// }
 
-function clearMoved()
-{
+// function clearMoved()
+// {
 // 	for(var i = 0; i < movedmarkers.length; i++)
 // 	{
 // 		var oldpos = lines[i].getPath().getAt(0);
@@ -230,9 +123,9 @@ function clearMoved()
 // 		movedmarkers[i].setZIndex(0);
 // 		lines[i].setMap();
 // 	}
-}
-function checkMove()
-{
+// }
+// function checkMove()
+// {
 // 	var actmarker = markers[active];
 // 	for(var i = 0; i < movedmarkers.length; i++)
 // 	{
@@ -263,13 +156,4 @@ function checkMove()
 // 			movedmarkers.push(marker);
 // 		}
 // 	}
-}
-
-function handleResize()
-{
-	var height = self.innerHeight - $('top').offsetHeight - 30;
-	$('map').style.height = height + 'px';
-	$('logs').style.height = height + 'px';
-}
-
-window.onresize = handleResize;
+// }
