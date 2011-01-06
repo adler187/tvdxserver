@@ -20,7 +20,7 @@ document.observe
 		
 		google.maps.event.addListener(map, 'click', map.clearActiveMarker.bind(map));
 		
-		$('options_form').sumit();
+		$('submit').click();
 	}
 );
 
