@@ -59,5 +59,5 @@ function handleResize()
 	$('logs').style.height = height + 'px';
 }
 
-document.observe(window, 'resize', handleResize);
+Event.observe(window, 'resize', handleResize);
 
