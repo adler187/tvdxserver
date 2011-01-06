@@ -1,5 +1,7 @@
 class HomeController < ApplicationController
 	def index
+		p params
+		
 		time_params = params[:time_interval]
 		time_range = (time_params.nil? ? TimeInterval.first : TimeInterval.find(time_params[:id])).date_range
 

@@ -20,6 +20,34 @@ document.observe
 		
 		google.maps.event.addListener(map, 'click', map.clearActiveMarker.bind(map));
 		
+		Event.observe
+		(
+			'options_form',
+			'submit',
+			function(event)
+			{
+				var form = $('options_form');
+				var throbber = $('throbber');
+
+				form.request
+				(
+					{
+						onCreate: function()
+						{
+							throbber.removeClassName('hidden');
+							form.disable();
+						},
+						onComplete: function()
+						{
+							throbber.addClassName('hidden');
+							form.enable();
+						}
+					}
+				);
+				event.stop();
+			}
+		);
+
 		$('submit').click();
 	}
 );
@@ -32,3 +60,4 @@ function handleResize()
 }
 
 document.observe(window, 'resize', handleResize);
+

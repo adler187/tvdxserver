@@ -55,3 +55,13 @@ body { margin: 10px; }
 {
 	cursor: pointer;
 }
+
+.hidden
+{
+	visibility: hidden;
+}
+
+.visible
+{
+	visibility: visible;
+}
