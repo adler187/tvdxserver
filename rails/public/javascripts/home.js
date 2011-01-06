@@ -7,14 +7,10 @@ document.observe
 		handleResize();
 		
 		// get from rails somehow
-		var latitude = 44.032686;
-		var longitude = -92.648311;
-		var zoom = 8;
-		
-		var centerlatlng = new google.maps.LatLng(latitude, longitude);
+		var centerlatlng = new google.maps.LatLng($('latitude').content, $('longitude').content);
 		var myOptions =
 		{
-			zoom: zoom,
+			zoom: 8,
 			center: centerlatlng,
 			disableDefaultUI: true,
 			mapTypeId: google.maps.MapTypeId.ROADMAP
