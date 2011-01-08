@@ -11,6 +11,10 @@ ActionController::Routing::Routes.draw do |map|
 
   map.resources :home
 
+#   map.resources :chart
+
+  map.chart 'chart/:station_id/:tuner_id', :controller => 'chart', :action => 'index'
+
   # The priority is based upon order of creation: first created -> highest priority.
 
   # Sample of regular route:
