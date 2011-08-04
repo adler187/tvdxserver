@@ -1,4 +1,7 @@
 class StationsController < ApplicationController
+	
+  before_filter :authenticate
+	
   # GET /stations
   # GET /stations.xml
   def index

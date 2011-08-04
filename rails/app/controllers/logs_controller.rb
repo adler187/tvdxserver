@@ -1,4 +1,7 @@
 class LogsController < ApplicationController
+  
+  before_filter :authenticate
+  
   # GET /logs
   # GET /logs.xml
   def index

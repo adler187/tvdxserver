@@ -1,4 +1,7 @@
 class TunersController < ApplicationController
+	
+  before_filter :authenticate
+	
 	# GET /tuners
 	# GET /tuners.xml
 	def index

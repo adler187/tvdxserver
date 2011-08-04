@@ -1,4 +1,6 @@
 class TimeIntervalsController < ApplicationController
+	
+  before_filter :authenticate
 
 	def help
 		Helper.instance
