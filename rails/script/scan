@@ -94,8 +94,8 @@ def scan(tuner_config)
 		# scan tuner
 		str = "#{CONFIG_PROG} -i #{tuner_id} -t #{tuner} 2> /dev/null"
 		p str
-# 		process = IO.popen(str, 'r')
-		process = File.new('output.json', 'r')
+		process = IO.popen(str, 'r')
+# 		process = File.new('output.json', 'r')
 		output = process.readlines.join
 		process.close
 
