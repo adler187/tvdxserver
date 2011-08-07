@@ -94,8 +94,8 @@ def scan(tuner_config)
 		# scan tuner
 		str = "#{CONFIG_PROG} -i #{tuner_id} -t #{tuner} 2> /dev/null"
 		p str
-		process = IO.popen(str, 'r')
-# 		process = File.new('output.json', 'r')
+# 		process = IO.popen(str, 'r')
+		process = File.new('output.json', 'r')
 		output = process.readlines.join
 		process.close
 
@@ -138,14 +138,14 @@ def scan(tuner_config)
 						callsign = callsign_match[1]
 					else
 						log_output(log, "getting callsign from rabbitears")
-						url = 'www.rabbitears.info'
-						location = '/oddsandends.php?request=tsid'
+						host = 'www.rabbitears.info'
+						page = '/oddsandends.php?request=tsid'
 
-						page = Net::HTTP.new(url, nil)
+						req = Net::HTTP.new(host, nil)
 						begin
-							resp, data = page.get(location)
+							resp, data = req.get(page)
 						rescue
-							puts "Error loading #{url}#{location}"
+							puts "Error loading #{host}#{page}"
 							exit
 							# TODO: log results for later
 							next
@@ -155,7 +155,7 @@ def scan(tuner_config)
 							callsign = data_match[1]
 							realdisp = data_match[2]
 							realrf = data_match[3]
-
+              
 							puts "#{realrf}, #{channel}, #{realdisp}, #{virtual},"
 
 							unless(realrf == channel && realdisp.to_i == virtual.to_i)
@@ -179,21 +179,31 @@ def scan(tuner_config)
 					# type: (3) Only licenced stations, no CPs or pending aps
 					# list: (4) Text ouput, pipe delimited
 
-					url = 'www.fcc.gov'
-					location = "/fcc-bin/tvq?call=#{callsign}&chan=#{channel}&cha2=#{channel}&list=4"
+          loading_data = true
+          host = 'www.fcc.gov'
+          page = "/fcc-bin/tvq?call=#{callsign}&chan=#{channel}&cha2=#{channel}&list=4"
 
-					page = Net::HTTP.new(url, nil)
-					begin
-						resp, data = page.get(location)
-					rescue
-						print "Error loading #{url}#{location}"
-						exit
-						# TODO: log results for later
-						next
-					end
+          while(loading_data)
+            req = Net::HTTP.new(host, nil)
+            begin
+              resp, data = req.get(page)
+              if resp.response['Location']
+                uri = URI.parse(resp.response['Location'])
+                host = uri.host
+                page = "#{uri.path}?#{uri.query}"
+              else
+                loading_data = false
+              end
+            rescue
+              print "Error loading #{host}#{page}"
+              exit
+              # TODO: log results for later
+              next
+            end
+          end
 
 					lines = data.strip.split("\n")
-
+          
 					if lines.length == 0
 						log_output(log, "Found a translator of callsign on channel #{channel} at #{scan_time}, add manually")
 						log_output(log, "Signal: #{result['status']['ss']}, SNR: #{result['status']['snr']}, SER: #{result['status']['ser']}")
@@ -276,7 +286,7 @@ def scan(tuner_config)
 							:distance => distance
 						)
 
-# 						p station
+						p station
 						
 						if !station.save
 							station.errors

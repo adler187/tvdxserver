@@ -1,4 +1,4 @@
-<h1>Editing time_interval</h1>
+<% title 'Editing Time Interval' %>
 
 <% form_for(@time_interval) do |f| %>
   <%= f.error_messages %>
@@ -10,10 +10,6 @@
   <p>
     <%= f.label :unit %><br />
     <%= f.text_field :unit %>
-  </p>
-  <p>
-    <%= f.label :description %><br />
-    <%= f.text_field :description %>
   </p>
   <p>
     <%= f.submit 'Update' %>

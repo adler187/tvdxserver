@@ -1,4 +1,4 @@
-<h1>New tuner</h1>
+<% title 'New Tuner' %>
 
 <% form_for(@tuner) do |tuner_form| %>
   <%= tuner_form.error_messages %>
@@ -11,7 +11,7 @@
     <%= tuner_form.label :tuner_number %>
     <%= tuner_form.text_field :tuner_number %>
   </p>
-	<% tuner_form.fields_for @tuner_info do |info_form| %>
+	<% tuner_form.fields_for @tuner.tuner_info.build do |info_form| %>
 		<p>
 			<%= info_form.label :info %><br />
 			<%= info_form.text_area :info %>

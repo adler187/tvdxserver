@@ -1,17 +1,11 @@
 ActionController::Routing::Routes.draw do |map|
-  map.resources :time_intervals
-
+  
+  map.resources :time_intervals, :collection => { :sort => :post }
   map.resources :logs
-
-  map.resources :tuners
-
+  map.resources :tuners, :collection => { :sort => :post }
   map.resources :stations
-
   map.resources :admin
-
   map.resources :home
-
-#   map.resources :chart
 
   map.chart 'chart/:station_id/:tuner_id', :controller => 'chart', :action => 'index'
 

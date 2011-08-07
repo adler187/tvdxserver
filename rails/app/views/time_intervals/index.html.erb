@@ -1,24 +1,11 @@
-<h1>Listing time_intervals</h1>
+<% title 'Time Intervals' %>
 
-<table>
-  <tr>
-    <th>Interval</th>
-    <th>Unit</th>
-    <th>Description</th>
-  </tr>
-
+<ul id='time_intervals' class='sortable'>
 <% @time_intervals.each do |time_interval| %>
-  <tr>
-    <td><%=h time_interval.interval %></td>
-    <td><%=h time_interval.unit %></td>
-    <td><%=h time_interval.description %></td>
-    <td><%= link_to 'Show', time_interval %></td>
-    <td><%= link_to 'Edit', edit_time_interval_path(time_interval) %></td>
-    <td><%= link_to 'Destroy', time_interval, :confirm => 'Are you sure?', :method => :delete %></td>
-  </tr>
+  <%= sortable_list_item time_interval.description, time_interval %>
 <% end %>
-</table>
+</ul>
 
-<br />
+<%= sortable_element('time_intervals', :url => sort_time_intervals_path, :handle => 'handle') %>
 
 <%= link_to 'New time_interval', new_time_interval_path %>

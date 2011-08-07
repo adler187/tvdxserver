@@ -1,8 +1,25 @@
 class TimeInterval < ActiveRecord::Base
-	@@valid_units = %w( month day year hour minute second )
+	@@VALID_UNITS = %w( month day year hour minute second )
 	
+  validates_inclusion_of :unit, :in => @@VALID_UNITS, :message => "%s is not a valid unit", :allow_nil => true
+  
+  validates_uniqueness_of :interval, :scope => :unit
+  validates_uniqueness_of :position
+  
+  validates_presence_of :interval, :unless => Proc.new { |time_interval| time_interval.unit.nil? }
+  validates_presence_of :unit, :unless => Proc.new { |time_interval| time_interval.interval.nil? }
+  
+  before_destroy :prevent_delete_all_interval
+  
+  acts_as_list
+  default_scope :order => "position"
+  
+  def helpers
+    ActionController::Base.helpers
+  end
+  
 	def self.valid_units
-		@@valid_units
+		@@VALID_UNITS
 	end
 
 	def date_range
@@ -12,10 +29,29 @@ class TimeInterval < ActiveRecord::Base
 			return self.interval.method(self.unit).call.ago..Time.now
 		end
 	end
-	
-	validates_inclusion_of :unit, :in => @@valid_units, :message => "%s is not a valid unit", :allow_nil => true
-	validates_uniqueness_of :interval, :scope => :unit
-	validates_presence_of :interval, :unless => Proc.new { |time_interval| time_interval.unit.nil? }
-	validates_presence_of :unit, :unless => Proc.new { |time_interval| time_interval.interval.nil? }
-	validates_presence_of :description
+  
+  def description
+    if(all_interval?)
+      'All'
+    else
+      "#{helpers.pluralize(interval, unit)} ago"
+    end
+  end
+  
+  def all_interval?
+    unit.nil? && interval.nil?
+  end
+  
+  def self.all_interval
+    @all_interval ||= TimeInterval.first(:conditions => "unit IS NULL AND interval IS NULL")
+  end
+  
+  private
+  
+  def prevent_delete_all_interval
+    if all_interval?
+      raise "Cannot delete time interval 'All'"
+    end
+  end
+  
 end

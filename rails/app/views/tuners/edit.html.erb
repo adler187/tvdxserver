@@ -1,4 +1,4 @@
-<h1>Editing tuner</h1>
+<% title "Editing #{@tuner.tuner_number}" %>
 
 <% @tuner.tuner_info.build if @tuner.tuner_info.empty? %>
 <% form_for(@tuner) do |tuner_form| %>

@@ -1,10 +1,10 @@
-<h1>New log</h1>
+<% title 'New Log' %>
 
 <% form_for(@log) do |f| %>
   <%= f.error_messages %>
   <p>
     <%= f.label :tuner %>
-    <%= collection_select(:log, :tuner_id, Tuner.all(:order => 'tuner_id'), :id, :name) %>
+    <%= collection_select(:log, :tuner_id, Tuner.all, :id, :full_name) %>
   </p>
   <p>
     <%= f.label :station %>

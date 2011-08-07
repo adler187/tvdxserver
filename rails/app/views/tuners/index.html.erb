@@ -1,12 +1,14 @@
-<h1>Listing tuners</h1>
+<% title 'Tuners' %>
 
-<table>
-  <tr>
-    <th>Tuner</th>
-    <th>Tuner number</th>
-  </tr>
-
+<ul id='tuners'>
 <% @tuners.each do |tuner| %>
+  <%= sortable_list_item tuner.full_name, tuner %>
+<% end %>
+</ul>
+
+<%= sortable_element('tuners', :url => sort_tuners_path, :handle => 'handle') %>
+
+<!--<% @tuners.each do |tuner| %>
   <tr>
     <td><%=h tuner.tuner_id %></td>
     <td><%=h tuner.tuner_number %></td>
@@ -14,8 +16,7 @@
     <td><%= link_to 'Edit', edit_tuner_path(tuner) %></td>
     <td><%= link_to 'Destroy', tuner, :confirm => 'Are you sure?', :method => :delete %></td>
   </tr>
-<% end %>
-</table>
+<% end %>-->
 
 <br />
 

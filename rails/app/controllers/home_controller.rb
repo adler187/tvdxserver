@@ -1,21 +1,14 @@
 class HomeController < ApplicationController
 	def index
-		time_params = params[:time_interval]
-		time_range = (time_params.nil? ? TimeInterval.first : TimeInterval.find(time_params[:id])).date_range
+    time_params = params[:time_interval] || HashWithIndifferentAccess.new(TimeInterval.first.attributes)
 
 		tuner_params = params[:tuner]
 		@tuner = tuner_params.nil? ? Tuner.first : Tuner.find(tuner_params[:id])
-		@logs = Log.all(
-			:select => 'logs.*, max(logs.created_at) as log_time',
-			:conditions =>
-			[
-				'stations.id = logs.station_id and tuner_id = ? and logs.created_at > ? ',
-				@tuner.id,
-				time_range.begin.utc
-		    ],
-			:group => 'callsign',
-			:include => [ :station ]
-		)
+    if @tuner.nil?
+      @logs = Array.new
+    else
+      @logs = @tuner.logs_since(TimeInterval.find(time_params[:id]))
+    end
 
 		@map_location = { :latitude => CONFIG['latitude'], :longitude => CONFIG['longitude'] }
 
