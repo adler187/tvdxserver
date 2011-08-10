@@ -7,13 +7,8 @@ class StationsController < ApplicationController
   end
 
   def destroy_all
-	  Station.all.each do |station|
-		  station.destroy
-	  end
+    Station.destroy_all
 	  
-	  respond_to do |format|
-		format.html { redirect_to(stations_url) }
-		format.xml  { head :ok }
-	  end
+    redirect_to(stations_url)
   end
 end
