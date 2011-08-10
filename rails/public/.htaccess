@@ -1,1 +1,0 @@
-RewriteRule ^(.*)$ dispatch.fcgi [QSA,L]
