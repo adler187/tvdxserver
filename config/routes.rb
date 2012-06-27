@@ -1,5 +1,4 @@
-ActionController::Routing::Routes.draw do |map|
-  
+Tvscanner::Application.routes.draw do |map|
   map.resources :time_intervals, :collection => { :sort => :post }
   map.resources :logs
   map.resources :tuners, :collection => { :sort => :post }

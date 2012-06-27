@@ -1,0 +1,18 @@
+base: &base
+  latitude: <%= Capistrano::CLI.ui.ask("Enter latitude: ") %>
+  longitude: <%= Capistrano::CLI.ui.ask("Enter longitude: ") %>
+  name: <%= Capistrano::CLI.ui.ask("Enter name or callsign for title: ") %>
+
+development:
+<<: *base
+  perform_authentication: false
+
+production:
+<<: *base
+  perform_authentication: true
+  username: <%= Capistrano::CLI.ui.ask("Enter username: ") %>
+  password: <%= Capistrano::CLI.ui.ask("Enter password: ") %>
+
+test:
+<<: *base
+  perform_authentication: false
