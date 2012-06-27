@@ -43,7 +43,7 @@ class TimeInterval < ActiveRecord::Base
   end
   
   def self.all_interval
-    @all_interval ||= TimeInterval.first(:conditions => "unit IS NULL AND interval IS NULL")
+    @all_interval ||= TimeInterval.first(:conditions => "unit IS NULL AND `interval` IS NULL")
   end
   
   private
