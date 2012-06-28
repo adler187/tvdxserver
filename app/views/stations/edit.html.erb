@@ -1,6 +1,6 @@
 <% title "Editing #{@station.callsign}" %>
 
-<% form_for(@station) do |f| %>
+<%= form_for(@station) do |f| %>
   <%= render 'shared/error_messages', :target => @station %>
 
   <p>

@@ -1,6 +1,6 @@
 <% title 'New Log' %>
 
-<% form_for(@log) do |f| %>
+<%= form_for(@log) do |f| %>
   <%= render 'shared/error_messages', :target => @log %>
   <p>
     <%= f.label :tuner %>

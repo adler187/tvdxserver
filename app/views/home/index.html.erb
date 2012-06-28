@@ -1,5 +1,5 @@
 <div id='top'>
-<% form_tag request.fullpath, :id => 'options_form' do %>
+<%= form_tag request.fullpath, :id => 'options_form' do %>
 	<%= label_tag 'tuner_id', 'Tuner:' %>
 	<%= collection_select(:tuner, :id, Tuner.all, :id, :full_name) %>
 	<%= label_tag 'time_interval_id', 'Results since:' %>
