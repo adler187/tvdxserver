@@ -1,7 +1,7 @@
 <% title "Editing #{@station.callsign}" %>
 
 <% form_for(@station) do |f| %>
-  <%= f.error_messages %>
+  <%= render 'shared/error_messages', :target => @station %>
 
   <p>
     <%= f.label :tsid %><br />

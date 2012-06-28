@@ -1,8 +1,8 @@
 class TimeIntervalsController < ApplicationController
 	
   before_filter :authenticate
-	
-	def index
+
+  def index
     @time_intervals = TimeInterval.all
   end
 
@@ -15,6 +15,10 @@ class TimeIntervalsController < ApplicationController
     @options = TimeInterval.valid_units.collect { |unit| [unit.capitalize, unit] };
   end
 
+  def edit
+    @time_interval = TimeInterval.find(params[:id])
+  end
+  
   def create
     @time_interval = TimeInterval.new(params[:time_interval])
 

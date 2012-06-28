@@ -1,8 +1,15 @@
 <% title 'Editing log' %>
 
 <% form_for(@log) do |f| %>
-  <%= f.error_messages %>
-
+  <%= render 'shared/error_messages', :target => @log %>
+ <p>
+    <%= f.label :tuner %>
+    <%= collection_select(:log, :tuner_id, Tuner.all, :id, :full_name) %>
+  </p>
+  <p>
+    <%= f.label :station %>
+    <%= collection_select(:log, :station_id, Station.all(:order => 'callsign'), :id, :callsign) %>
+  </p>
   <p>
     <%= f.label :signal_strength %><br />
     <%= f.text_field :signal_strength %>
@@ -14,14 +21,6 @@
   <p>
     <%= f.label :signal_quality %><br />
     <%= f.text_field :signal_quality %>
-  </p>
-  <p>
-    <%= f.label :station %><br />
-    <%= f.text_field :station %>
-  </p>
-  <p>
-    <%= f.label :tuner %><br />
-    <%= f.text_field :tuner %>
   </p>
   <p>
     <%= f.submit 'Update' %>

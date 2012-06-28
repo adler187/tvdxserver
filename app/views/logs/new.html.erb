@@ -1,7 +1,7 @@
 <% title 'New Log' %>
 
 <% form_for(@log) do |f| %>
-  <%= f.error_messages %>
+  <%= render 'shared/error_messages', :target => @log %>
   <p>
     <%= f.label :tuner %>
     <%= collection_select(:log, :tuner_id, Tuner.all, :id, :full_name) %>

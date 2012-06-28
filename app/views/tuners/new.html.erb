@@ -1,7 +1,7 @@
 <% title 'New Tuner' %>
 
 <% form_for(@tuner) do |tuner_form| %>
-  <%= tuner_form.error_messages %>
+  <%= render 'shared/error_messages', :target => @tuner %>
 
   <p>
     <%= tuner_form.label :tuner_id %>

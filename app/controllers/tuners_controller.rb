@@ -1,11 +1,23 @@
 class TunersController < ApplicationController
   
   before_filter :authenticate
-  
-  make_resourceful do
-    actions :all
+
+  def index
+    @tuners = Tuner.all
   end
 
+  def show
+    @tuner = Tuner.find(params[:id])
+  end
+
+  def new
+    @tuner = Tuner.new
+  end
+  
+  def edit
+	@tuner = Tuner.find(params[:id])
+  end
+  
   def create
 		tuner_params = params[:tuner]
 		info_params = tuner_params[:tuner_info]
@@ -24,10 +36,10 @@ class TunersController < ApplicationController
 	end
 
   def update
-		@tuner = Tuner.find(params[:id])
-		info_params = params[:tuner][:tuner_info]
-		
-		@tuner_info = @tuner.tuner_info.build(info_params)
+    @tuner = Tuner.find(params[:id])
+    info_params = params[:tuner][:tuner_info]
+    
+    @tuner_info = @tuner.tuner_info.build(info_params)
 
     if @tuner_info.save
       flash[:notice] = 'Tuner was successfully updated'
@@ -36,7 +48,18 @@ class TunersController < ApplicationController
       flash[:error] = 'Tuner was not updated'
       render :action => "edit" 
     end
-	end
+  end
+  
+  def destroy
+    begin
+      Tuner.destroy(params[:id])
+      flash[:notice] = 'Tuner removed'
+    rescue
+      flash[:error] = $!.message
+    end
+    
+    redirect_to tuners_path
+  end
   
   def sort
     params[:tuners].each_with_index do |id, index|
