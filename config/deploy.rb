@@ -1,8 +1,11 @@
 require 'bundler/capistrano'
 
+#require "capistrano_database_yml"
+#  require "capistrano_config"
 
 set :application, "DX Scanner"
 default_run_options[:pty] = true  # Must be set for the password prompt from git to work
+default_environment["PATH"] = "$PATH:/usr/lib/ruby/gems/1.8/bin/"
 
 set :scm, 'git'
 set :repository, 'git://github.com/adler187/DX-Scanner.git'
@@ -12,6 +15,7 @@ set :deploy_to, '/home/adler187/dxscan.zekesdominion.com'
 
 # ssh_options[:user]='deployer187'
 # ssh_options[:keys] = %w(/home/zeke/.ssh/id_rsa)
+ssh_options[:forward_agent] = true
 
 set :user, "deployer187"  # The server's user for deploys
 #set :scm_passphrase, "eBZFPiXq"  # The deploy user's password
