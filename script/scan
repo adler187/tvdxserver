@@ -25,7 +25,7 @@ if config.nil?
 	exit 1
 end
 
-env_config = config[RAILS_ENV]
+env_config = config[Rails.env]
 if env_config.nil?
 	$stderr.puts "No configuration for this environment specified"
 	exit 1
