@@ -1,4 +1,4 @@
-#!/usr/bin/env ruby
+#!/home/zeke/Projects/tvscanner/script/rails runner
 
 ENV['RAILS_ENV'] = ARGV.first || ENV['RAILS_ENV'] || 'development'
 require File.expand_path(File.dirname(__FILE__) + "/../config/environment")
@@ -19,7 +19,7 @@ module Kernel
 end
 # ============================
 
-config = YAML.load_file("#{RAILS_ROOT}/config/scan.yml")
+config = YAML.load_file("#{Rails.root}/config/scan.yml")
 if config.nil?
 	$stderr.puts "Couldn't load config file"
 	exit 1
