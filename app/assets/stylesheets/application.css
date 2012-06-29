@@ -1,3 +1,9 @@
+/*
+ *= require scaffold
+ *= require index
+ *= require_self
+*/
+
 #error
 {
   color: red;

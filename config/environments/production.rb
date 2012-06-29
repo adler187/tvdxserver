@@ -46,4 +46,13 @@ Tvscanner::Application.configure do
 
   # Send deprecation notices to registered listeners
   config.active_support.deprecation = :notify
+  
+  # Compress assets
+  config.assets.compress = true
+  
+  # Generate digests for asset URLs
+  config.assets.digest = true
+  
+  # Don't fallback to assets pipeline if a precompiled asset is missed
+  config.assets.compile = false
 end

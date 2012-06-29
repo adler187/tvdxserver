@@ -40,5 +40,11 @@ module Tvscanner
     config.filter_parameters += [:password]
 	
 	config.time_zone = 'Central Time (US & Canada)'
+    
+    # Enable the asset pipeline
+    config.assets.enabled = true
+    
+    # Version of your assets, change if you want to expire all your assets
+    config.assets.version = '1.0'
   end
 end
