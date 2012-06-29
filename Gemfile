@@ -7,7 +7,9 @@ group :development, :test do
 end
 
 group :production do
-	gem 'mysql'
+  gem 'mysql'
+  gem 'execjs'
+  gem 'therubyracer'
 end
 
 # Deploy with Capistrano
