@@ -8,19 +8,19 @@ end
 
 group :production do
   gem 'mysql'
-  gem 'execjs'
-  gem 'therubyracer'
+#   gem 'execjs'
+#   gem 'therubyracer'
 end
 
-# Deploy with Capistrano
-gem 'capistrano'
 
 gem 'acts_as_list'
 
 # gem 'make_resourceful'
 
 group :development do
-#	gem 'capistrano_database_yml'
+  # Deploy with Capistrano
+  gem 'capistrano'
+#   gem 'capistrano_database_yml'
 end
 
 # Bundle gems for the local environment. Make sure to
@@ -30,10 +30,10 @@ end
 #   gem 'webrat'
 # end
 
-group :assets do
-  gem 'sass-rails', '~> 3.1.0'
-  gem 'coffee-rails', '~> 3.1.0'
-  gem 'uglifier'
-end
+#group :assets do
+#  gem 'sass-rails', '~> 3.1.0'
+#  gem 'coffee-rails', '~> 3.1.0'
+#  gem 'uglifier'
+#end
 
 gem 'jquery-rails'

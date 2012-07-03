@@ -34,6 +34,6 @@ Tvscanner::Application.configure do
   config.active_support.deprecation = :stderr
   
   # Configure static asset server for tests with Cache-Control for performance
-  config.serve_static_assets = true
-  config.static_cache_control = "public, max-age=3600"
+#   config.serve_static_assets = true
+#   config.static_cache_control = "public, max-age=3600"
 end

@@ -23,9 +23,9 @@ Tvscanner::Application.configure do
   config.action_dispatch.best_standards_support = :builtin
   
   # Don't compress assets
-  config.assets.compress = false
+#   config.assets.compress = false
   
   # Expand the lines which load assets
-  config.assets.debug = true
+#   config.assets.debug = true
 end
 
