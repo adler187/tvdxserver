@@ -8,8 +8,6 @@ end
 
 group :production do
   gem 'mysql'
-#   gem 'execjs'
-#   gem 'therubyracer'
 end
 
 
