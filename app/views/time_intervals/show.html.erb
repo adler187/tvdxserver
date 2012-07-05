@@ -16,5 +16,5 @@
 
 
 <%= link_to 'Edit', edit_time_interval_path(@time_interval) %> |
-<%= link_to 'Destroy', @time_interval, :confirm => 'Are you sure?', :method => :delete %> |
+<%= link_to 'Destroy', @time_interval, :data => { :confirm => 'Are you sure?' }, :method => :delete %> |
 <%= link_to 'Back', time_intervals_path %>

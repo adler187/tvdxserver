@@ -24,7 +24,7 @@
     <td><%=h station.distance %></td>
     <td><%= link_to 'Show', station %></td>
     <td><%= link_to 'Edit', edit_station_path(station) %></td>
-    <td><%= link_to 'Destroy', station, :confirm => 'Are you sure?', :method => :delete %></td>
+    <td><%= link_to 'Destroy', station, :data => { :confirm => 'Are you sure?' }, :method => :delete %></td>
   </tr>
 <% end %>
 </table>

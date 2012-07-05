@@ -15,7 +15,7 @@
     <td><%=h tuner.tuner_number %></td>
     <td><%= link_to 'Show', tuner %></td>
     <td><%= link_to 'Edit', edit_tuner_path(tuner) %></td>
-    <td><%= link_to 'Destroy', tuner, :confirm => 'Are you sure?', :method => :delete %></td>
+    <td><%= link_to 'Destroy', tuner, :data => { :confirm => 'Are you sure?' }, :method => :delete %></td>
   </tr>
 <% end %>-->
 

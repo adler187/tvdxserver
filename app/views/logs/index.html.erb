@@ -18,7 +18,7 @@
     <td><%=h log.tuner.full_name %></td>
     <td><%= link_to 'Show', log %></td>
     <td><%= link_to 'Edit', edit_log_path(log) %></td>
-    <td><%= link_to 'Destroy', log, :confirm => 'Are you sure?', :method => :delete %></td>
+    <td><%= link_to 'Destroy', log, :data => { :confirm => 'Are you sure?' }, :method => :delete %></td>
   </tr>
 <% end %>
 </table>

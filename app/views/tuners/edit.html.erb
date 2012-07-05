@@ -14,7 +14,7 @@
     <%= @tuner.tuner_number %>
     <%= tuner_form.hidden_field :tuner_number %>
   </p>
-	<% tuner_form.fields_for @tuner.current do |info_form| %>
+	<%= tuner_form.fields_for @tuner.current do |info_form| %>
 		<p>
 			<%= info_form.label :info %><br />
 			<%= info_form.text_area :info %>
