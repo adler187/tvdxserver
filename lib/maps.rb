@@ -19,7 +19,7 @@ def info_window(log)
 	content += 'Distance: ' + station.distance.round(2).to_s + ' mi<br />'
 	content += 'Most recent scan: <br />'
 	content += 'Signal Strength: ' + log.signal_strength.to_s + '<br />'
-	content += 'Signal to Noize: ' + log.signal_to_noise.to_s + '<br />'
+	content += 'Signal to Noise: ' + log.signal_to_noise.to_s + '<br />'
 	content += 'Signal Quality: ' + log.signal_quality.to_s + '<br />'
 	content += link_to 'Signal Graph', "/chart/#{station.id}/#{log.tuner.id}", { :target => 'signal_graph' }
 end
