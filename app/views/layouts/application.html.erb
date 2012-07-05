@@ -4,8 +4,7 @@
   <title><%= yield(:title) %></title>
   <%= stylesheet_link_tag 'scaffold' %>
   <%= stylesheet_link_tag 'application' %>
-  <%= javascript_include_tag 'jquery-min' %>
-  <%= javascript_include_tag 'application' %>
+  <%= javascript_include_tag :defaults %>
     
   <%= yield(:head) %>
   <%= csrf_meta_tag %>
