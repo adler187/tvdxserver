@@ -27,7 +27,8 @@
 			var throbber = $('#throbber');
 			
 			throbber.removeClass('hidden');
-			$(form).attr('disabled', 'disabled');
+			$(form).find(':input:not(:disabled)').prop('disabled', true)
+// 			.attr('disabled', 'disabled');
 										
 			$.ajax({
 				dataType: 'script',
@@ -36,7 +37,8 @@
 				data: $(form).serialize(),
 				complete: function() {
 					throbber.addClass('hidden');
-					$(form).removeAttr('disabled');
+// 					$(form).removeAttr('disabled');
+					$(form).find(':input:disabled').prop('disabled', false)
 				}
 			});
 			
