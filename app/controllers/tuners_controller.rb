@@ -4,6 +4,11 @@ class TunersController < ApplicationController
 
   def index
     @tuners = Tuner.all
+    
+    respond_to do |format|
+      format.html
+      format.json { render :json => @tuners }
+    end
   end
 
   def show
@@ -15,7 +20,7 @@ class TunersController < ApplicationController
   end
   
   def edit
-	@tuner = Tuner.find(params[:id])
+    @tuner = Tuner.find(params[:id])
   end
   
   def create
