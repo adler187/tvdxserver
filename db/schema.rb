@@ -1,10 +1,11 @@
-# This file is auto-generated from the current state of the database. Instead of editing this file, 
-# please use the migrations feature of Active Record to incrementally modify your database, and
-# then regenerate this schema definition.
+# This file is auto-generated from the current state of the database. Instead
+# of editing this file, please use the migrations feature of Active Record to
+# incrementally modify your database, and then regenerate this schema definition.
 #
-# Note that this schema.rb definition is the authoritative source for your database schema. If you need
-# to create the application database on another system, you should be using db:schema:load, not running
-# all the migrations from scratch. The latter is a flawed and unsustainable approach (the more migrations
+# Note that this schema.rb definition is the authoritative source for your
+# database schema. If you need to create the application database on another
+# system, you should be using db:schema:load, not running all the migrations
+# from scratch. The latter is a flawed and unsustainable approach (the more migrations
 # you'll amass, the slower it'll run and the greater likelihood for issues).
 #
 # It's strongly recommended to check this file into your version control system.
@@ -17,8 +18,8 @@ ActiveRecord::Schema.define(:version => 20110807060031) do
     t.integer  "signal_quality",  :limit => 4
     t.integer  "station_id"
     t.integer  "tuner_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",                   :null => false
+    t.datetime "updated_at",                   :null => false
   end
 
   add_index "logs", ["created_at"], :name => "index_logs_on_created_at"
@@ -35,11 +36,9 @@ ActiveRecord::Schema.define(:version => 20110807060031) do
   end
 
   create_table "time_intervals", :force => true do |t|
-    t.integer  "interval"
-    t.string   "unit"
-    t.datetime "created_at"
-    t.datetime "updated_at"
-    t.integer  "position"
+    t.integer "interval"
+    t.string  "unit",     :limit => 10
+    t.integer "position"
   end
 
   create_table "tuner_infos", :force => true do |t|
