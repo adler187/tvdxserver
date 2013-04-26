@@ -15,11 +15,11 @@ class LogsController < ApplicationController
   end
   
   def edit
-	@log = Log.find(params[:id])
+    @log = Log.find(params[:id])
   end
   
   def create
-	@log = Log.new(params[:log])
+    @log = Log.new(params[:log])
 
     if @log.save
       flash[:notice] = 'Log was successfully created'
@@ -31,7 +31,7 @@ class LogsController < ApplicationController
 	end
 
   def update
-	@log = Log.find(params[:id])
+    @log = Log.find(params[:id])
 
     if @log.update_attributes(params[:log])
       flash[:notice] = 'Log was successfully updated'
