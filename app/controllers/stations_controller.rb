@@ -3,7 +3,15 @@ class StationsController < ApplicationController
   before_filter :authenticate
 
   def index
-    @stations = Station.all
+    tsid = params[:tsid]
+    callsign = params[:callsign]
+    if tsid
+      @stations = Station.where(:tsid => tsid)
+    elsif callsign
+      @stations = Station.where(:callsign => callsign)
+    else
+      @stations = Station.all
+    end
     
     respond_to do |format|
       format.html

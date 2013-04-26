@@ -3,7 +3,14 @@ class TunersController < ApplicationController
   before_filter :authenticate
 
   def index
-    @tuners = Tuner.all
+    tuner_number = params[:tuner_number]
+    tuner_id = params[:tuner_id]
+    
+    if tuner_number && tuner_id
+      @tuners = Tuner.where(:tuner_number => tuner_number).where(:tuner_id => tuner_id)
+    else
+      @tuners = Tuner.all
+    end
     
     respond_to do |format|
       format.html
