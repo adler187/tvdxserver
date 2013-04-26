@@ -35,3 +35,7 @@ end
 #end
 
 gem 'jquery-rails'
+
+group :scan do
+  gem 'ffi-hdhomerun'
+end

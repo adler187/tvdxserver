@@ -1,9 +1,10 @@
 #!/usr/bin/env ruby
 
+require 'rubygems'
 require 'yaml'
 require 'haversine'
-require 'json'
 require 'net/http'
+require 'ffi-hdhomerun'
 
 # ============================
 # from http://chrisroos.co.uk/blog/2006-10-20-boolean-method-in-ruby-sibling-of-array-float-integer-and-string
@@ -41,11 +42,6 @@ namespace :scanner do
   # set to false to prevent inserting in database useful for testing
   LOG_RESULTS = Boolean(env_config['log_results'])
 
-  # if not set, set to 'scanner' (hope $PATH is set correctly)
-  env_config['scan_program'] ||= 'scanner'
-
-  CONFIG_PROG = env_config['scan_program']
-
   # location of tuner
   TUNER_LAT = env_config['latitude'].nil? ? nil : env_config['latitude'].to_f
   TUNER_LON = env_config['longitude'].nil? ? nil : env_config['longitude'].to_f
@@ -68,18 +64,34 @@ namespace :scanner do
     end
   end
   
+  def http_get_follow_redirect(uri)
+    loading_data = true
+    
+    while(loading_data)
+      req = Net::HTTP.new(uri.host, nil)
+      begin
+        resp = req.get(uri.request_uri)
+        if resp.response['Location']
+          uri = URI.parse(resp.response['Location'])
+        else
+          loading_data = false
+          return resp.body
+        end
+      rescue
+        puts "Error loading #{uri.to_s}"
+        return nil
+      end
+    end
+  end
+  
   def scan(tuner_config)
-    tuner_id = tuner_config['id']
-    tuner_number = tuner_config['tuner']
-    tuner = "/tuner#{tuner_config['tuner']}/"
-
     log = nil
     if LOG_RESULTS
   #     IO.sync = false
   #     log = File.new(tuner.gsub('/', '') + ".log", "w+")
     end
     
-    tuner_obj = Tuner.first(:conditions => ['tuner_id = ? and tuner_number = ?', tuner_id, tuner_number])
+    tuner_obj = Tuner.first(:conditions => ['tuner_id = ? and tuner_number = ?', tuner_config['id'], tuner_config['tuner']])
     if tuner_obj.nil?
       $stderr.puts "No tuner in database yet!"
       exit
@@ -90,19 +102,11 @@ namespace :scanner do
 
       # log all output from scan, note when calls and all-time new calls are found
       scan_time = start_time.strftime('%Y-%m-%d %T')
-
+      
       # scan tuner
-      str = "#{CONFIG_PROG} -i #{tuner_id} -t #{tuner} 2> /dev/null"
-      p str
-      process = IO.popen(str, 'r')
-  #     process = File.new('output.json', 'r')
-      output = process.readlines.join
-      process.close
-
-      results = JSON.parse(output)
-
-      results['scanresults'].each do |result|
-
+      tuner = HDHomeRun::Tuner.new(:id => tuner_config['id'], :tuner => tuner_config['tuner'])
+      
+      tuner.scan do |result|
         # set up some variables
         # TODO: add more variables here
         new_station = false
@@ -110,62 +114,52 @@ namespace :scanner do
         latitude = nil
         longitude = nil
 
-        (broadcast_standard, channel) = result['channel'].split(':')
-        if result['programcount'] > 0
-          program = result['programs'][0]['number']
-          virtual = result['programs'][0]['major']
-          callsign_id = result['programs'][0]['idstring']
+        if result.program_count > 0
+          program = result.programs[0]
+          
+          puts "found station: #{program.name} with virtual channel #{program.major}. Using PSIP program number #{program.number}"
 
-          puts "found station: #{callsign_id} with virtual channel #{virtual}. Using PSIP program number #{program}"
-
-          station = Station.first(:conditions => ['tsid = ? and rf = ? and display = ?', result['tsid'], channel, virtual])
+          station = Station.first(:conditions => ['tsid = ? and rf = ? and display = ?', result.tsid, result.channel, program.major])
 
           if station.nil?
             new_station = true
-            if result['tsid'] == '0x0001'
-              log_output(log, "Received a station with an invalid tsid #{result['tsid']} on rf channel #{channel}, display channel #{virtual}, station IDs as #{callsign_id}, at #{scan_time}")
+            if result.tsid == '0x0001'
+              log_output(log, "Received a station with an invalid tsid #{result.tsid} on rf channel #{result.channel}, display channel #{program.major}, station IDs as #{program.name}, at #{scan_time}")
               log_output(log, "This is most likely a translator that has not been properly set up correctly")
               log_output(log, "You can add this station manually, but note that the tsid might change in the future when it gets set properly and will be re-added")
-              log_output(log, "Signal: #{result['status']['ss']}, SNR: #{result['status']['snr']}, SER: #{result['status']['ser']}")
+              log_output(log, "Signal: #{result.status.signal_strength}, SNR: #{result.status.signal_to_noise}, SER: #{result.status.symbol_error_rate}")
               next
             end
 
-            callsign = callsign_id
+            callsign = program.name
 
             if(callsign.length > 4 && callsign.match(/\wDT$/))
               callsign = callsign[0, callsign.length-2]
             elsif callsign_match = callsign.match(/^((?:[CWKX][A-Z]{2,3})|(?:[KW]\d{1,2}[A-Z]{2}))/)
               callsign = callsign_match[1]
             else
-              log_output(log, "getting callsign from rabbitears")
-              host = 'www.rabbitears.info'
-              page = '/oddsandends.php?request=tsid'
+              log_output(log, "getting callsign from rabbitears for tsid #{result.tsid}")
+              
+              data = http_get_follow_redirect URI.parse 'http://www.rabbitears.info/oddsandends.php?request=tsid'
+              
+              # TODO: log results for later
+              next if data.nil?
 
-              req = Net::HTTP.new(host, nil)
-              begin
-                resp, data = req.get(page)
-              rescue
-                puts "Error loading #{host}#{page}"
-                exit
-                # TODO: log results for later
-                next
-              end
-
-              if data_match = data.match(/<td>#{result['tsid']}&nbsp;<\/td><td><a href=(?:'|")\/market\.php\?request=station_search&callsign=\d+(?:'|")>((?:[CWKX][A-Z]{2,3})|(?:[KW]\d{1,2}[A-Z]{2}))(?:-(?:(?:TV)|(?:DT)))?<\/a>&nbsp;<\/td><td align='right'>(\d+)(?:&nbsp;)*<\/td><td align='right'>(\d+)/)
+              if data_match = data.match(/<td>#{result.tsid}&nbsp;<\/td><td><a href=(?:'|")\/market\.php\?request=station_search&callsign=\d+(?:'|")>((?:[CWKX][A-Z]{2,3})|(?:[KW]\d{1,2}[A-Z]{2}))(?:-(?:(?:TV)|(?:DT)))?<\/a>&nbsp;<\/td><td align='right'>(\d+)(?:&nbsp;)*<\/td><td align='right'>(\d+)/)
                 callsign = data_match[1]
                 realdisp = data_match[2]
                 realrf = data_match[3]
                 
-                puts "#{realrf}, #{channel}, #{realdisp}, #{virtual},"
+                puts "#{realrf}, #{result.channel}, #{realdisp}, #{program.major},"
 
-                unless(realrf == channel && realdisp.to_i == virtual.to_i)
-                  log_output(log, "Found a translator of #{callsign}(#{result['tsid']}). IDs as #{callsign_id}, RF channel #{channel}, display channel #{virtual} at #{scan_time}, add manually")
-                  log_output(log, "Signal: #{result['status']['ss']}, SNR: #{result['status']['snr']}, SER: #{result['status']['ser']}")
+                unless(realrf == result.channel && realdisp.to_i == program.major.to_i)
+                  log_output(log, "Found a translator of #{callsign}(#{result.tsid}). IDs as #{program.name}, RF channel #{result.channel}, display channel #{program.major} at #{scan_time}, add manually")
+                  log_output(log, "Signal: #{result.status.signal_strength}, SNR: #{result.status.signal_to_noise}, SER: #{result.status.symbol_error_rate}")
                   next
                 end
               else
-                log_output(log, "Couldn't find callsign for tsid #{result['tsid']} on channel #{channel}, display channel #{virtual}, station IDs as #{callsign_id}, at #{scan_time}, add manually")
-                log_output(log, "Signal: #{result['status']['ss']}, SNR: #{result['status']['snr']}, SER: #{result['status']['ser']}")
+                log_output(log, "Couldn't find callsign for tsid #{result.tsid} on channel #{result.channel}, display channel #{program.major}, station IDs as #{program.name}, at #{scan_time}, add manually")
+                log_output(log, "Signal: #{result.status.signal_strength}, SNR: #{result.status.signal_to_noise}, SER: #{result.status.symbol_error_rate}")
                 next
               end
             end
@@ -178,35 +172,16 @@ namespace :scanner do
             # cha2: upper bound on channel number to search
             # type: (3) Only licenced stations, no CPs or pending aps
             # list: (4) Text ouput, pipe delimited
-
-            loading_data = true
-            host = 'www.fcc.gov'
-            page = "/fcc-bin/tvq?call=#{callsign}&chan=#{channel}&cha2=#{channel}&list=4"
-
-            while(loading_data)
-              req = Net::HTTP.new(host, nil)
-              begin
-                resp, data = req.get(page)
-                if resp.response['Location']
-                  uri = URI.parse(resp.response['Location'])
-                  host = uri.host
-                  page = "#{uri.path}?#{uri.query}"
-                else
-                  loading_data = false
-                end
-              rescue
-                print "Error loading #{host}#{page}"
-                exit
-                # TODO: log results for later
-                next
-              end
-            end
-
+            data = http_get_follow_redirect URI.parse "http://www.fcc.gov/fcc-bin/tvq?call=#{callsign}&chan=#{result.channel}&cha2=#{result.channel}&list=4"
+              
+            # TODO: log results for later
+            next if data.nil?
+            
             lines = data.strip.split("\n")
             
             if lines.length == 0
-              log_output(log, "Found a translator of callsign on channel #{channel} at #{scan_time}, add manually")
-              log_output(log, "Signal: #{result['status']['ss']}, SNR: #{result['status']['snr']}, SER: #{result['status']['ser']}")
+              log_output(log, "Found a translator of callsign on channel #{result.channel} at #{scan_time}, add manually")
+              log_output(log, "Signal: #{result.status.signal_strength}, SNR: #{result.status.signal_to_noise}, SER: #{result.status.symbol_error_rate}")
               next
             end
 
@@ -269,25 +244,22 @@ namespace :scanner do
               if lic_type.match(/LIC/)
                 break
               end
-
             end
 
             puts "#{callsign}: #{latitude}, #{longitude}, #{distance}"
 
             if LOG_RESULTS
               station = Station.create(
-                :tsid => result['tsid'],
+                :tsid => result.tsid,
                 :callsign => callsign,
                 :parent_callsign => nil,
-                :rf => channel.to_i,
-                :display => virtual.to_i,
+                :rf => result.channel.to_i,
+                :display => program.major.to_i,
                 :latitude => latitude,
                 :longitude => longitude,
                 :distance => distance
               )
 
-              p station
-              
               if !station.save
                 station.errors
               end
@@ -295,11 +267,10 @@ namespace :scanner do
           end
 
           if (true || distance > DX_DISTANCE || new_station)
-            status = result['status']
             result_log = Log.create(
-              :signal_strength => status['ss'],
-              :signal_to_noise => status['snr'],
-              :signal_quality => status['ser'],
+              :signal_strength => result.status.signal_strength,
+              :signal_to_noise => result.status.signal_to_noise,
+              :signal_quality => result.status.symbol_error_rate,
               :station => station,
               :tuner => tuner_obj
             )

@@ -2,7 +2,6 @@
 # This is an example of a development configuration
 
 development:
-  scan_program: /path/to/scanner # the scanner binary that is in the scanner branch
   loop: false                    # do you want to keep scanning (true | false)
   sleep_time: 600                # time in seconds to sleep after each scan
   # latitude and longitude where the tuner is located

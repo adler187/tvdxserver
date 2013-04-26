@@ -37,7 +37,12 @@ GEM
       net-sftp (>= 2.0.0)
       net-ssh (>= 2.0.14)
       net-ssh-gateway (>= 1.1.0)
+    coderay (1.0.9)
     erubis (2.7.0)
+    ffi (1.8.1)
+    ffi-hdhomerun (0.5)
+      ffi
+      pry
     highline (1.6.13)
     hike (1.2.1)
     i18n (0.6.0)
@@ -50,6 +55,7 @@ GEM
       i18n (>= 0.4.0)
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
+    method_source (0.8.1)
     mime-types (1.19)
     multi_json (1.3.6)
     mysql2 (0.3.11)
@@ -61,6 +67,10 @@ GEM
     net-ssh-gateway (1.1.0)
       net-ssh (>= 1.99.1)
     polyglot (0.3.3)
+    pry (0.9.12.1)
+      coderay (~> 1.0.5)
+      method_source (~> 0.8)
+      slop (~> 3.4)
     rack (1.4.1)
     rack-cache (1.2)
       rack (>= 0.4)
@@ -86,6 +96,7 @@ GEM
     rake (0.9.2.2)
     rdoc (3.12)
       json (~> 1.4)
+    slop (3.4.4)
     sprockets (2.1.3)
       hike (~> 1.2)
       rack (~> 1.0)
@@ -104,6 +115,7 @@ PLATFORMS
 DEPENDENCIES
   acts_as_list
   capistrano
+  ffi-hdhomerun
   jquery-rails
   mysql2
   rails (~> 3.2.0)
