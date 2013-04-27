@@ -3,8 +3,8 @@
 require 'rubygems'
 require 'yaml'
 require 'haversine'
-require 'net/http'
 require 'ffi-hdhomerun'
+require 'open-uri'
 
 # ============================
 # from http://chrisroos.co.uk/blog/2006-10-20-boolean-method-in-ruby-sibling-of-array-float-integer-and-string
@@ -64,33 +64,13 @@ namespace :scanner do
     end
   end
   
-  def http_get_follow_redirect(uri)
-    loading_data = true
-    
-    while(loading_data)
-      req = Net::HTTP.new(uri.host, nil)
-      begin
-        resp = req.get(uri.request_uri)
-        if resp.response['Location']
-          uri = URI.parse(resp.response['Location'])
-        else
-          loading_data = false
-          return resp.body
-        end
-      rescue
-        puts "Error loading #{uri.to_s}"
-        return nil
-      end
-    end
-  end
-  
   def scan(tuner_config)
     log = nil
     if LOG_RESULTS
   #     IO.sync = false
   #     log = File.new(tuner.gsub('/', '') + ".log", "w+")
     end
-    
+        
     tuner_obj = Tuner.first(:conditions => ['tuner_id = ? and tuner_number = ?', tuner_config['id'], tuner_config['tuner']])
     if tuner_obj.nil?
       $stderr.puts "No tuner in database yet!"
@@ -140,12 +120,12 @@ namespace :scanner do
             else
               log_output(log, "getting callsign from rabbitears for tsid #{result.tsid}")
               
-              data = http_get_follow_redirect URI.parse 'http://www.rabbitears.info/oddsandends.php?request=tsid'
+              data = open(URI.parse 'http://www.rabbitears.info/oddsandends.php?request=tsid')
               
               # TODO: log results for later
               next if data.nil?
 
-              if data_match = data.match(/<td>#{result.tsid}&nbsp;<\/td><td><a href=(?:'|")\/market\.php\?request=station_search&callsign=\d+(?:'|")>((?:[CWKX][A-Z]{2,3})|(?:[KW]\d{1,2}[A-Z]{2}))(?:-(?:(?:TV)|(?:DT)))?<\/a>&nbsp;<\/td><td align='right'>(\d+)(?:&nbsp;)*<\/td><td align='right'>(\d+)/)
+              if data_match = data.read.match(/<td>#{result.tsid}&nbsp;<\/td><td><a href=(?:'|")\/market\.php\?request=station_search&callsign=\d+(?:'|")>((?:[CWKX][A-Z]{2,3})|(?:[KW]\d{1,2}[A-Z]{2}))(?:-(?:(?:TV)|(?:DT)))?<\/a>&nbsp;<\/td><td align='right'>(\d+)(?:&nbsp;)*<\/td><td align='right'>(\d+)/)
                 callsign = data_match[1]
                 realdisp = data_match[2]
                 realrf = data_match[3]
@@ -172,12 +152,12 @@ namespace :scanner do
             # cha2: upper bound on channel number to search
             # type: (3) Only licenced stations, no CPs or pending aps
             # list: (4) Text ouput, pipe delimited
-            data = http_get_follow_redirect URI.parse "http://www.fcc.gov/fcc-bin/tvq?call=#{callsign}&chan=#{result.channel}&cha2=#{result.channel}&list=4"
-              
+            data = open(URI.parse "http://www.fcc.gov/fcc-bin/tvq?call=#{callsign}&chan=#{result.channel}&cha2=#{result.channel}&list=4")
+            
             # TODO: log results for later
             next if data.nil?
             
-            lines = data.strip.split("\n")
+            lines = data.read.strip.split("\n")
             
             if lines.length == 0
               log_output(log, "Found a translator of callsign on channel #{result.channel} at #{scan_time}, add manually")
