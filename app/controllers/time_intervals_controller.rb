@@ -1,5 +1,4 @@
 class TimeIntervalsController < ApplicationController
-	
   before_filter :authenticate
 
   def index
@@ -12,7 +11,7 @@ class TimeIntervalsController < ApplicationController
 
   def new
     @time_interval = TimeInterval.new
-    @options = TimeInterval.valid_units.collect { |unit| [unit.capitalize, unit] };
+    @options = TimeInterval.valid_units.collect { |unit| [unit.capitalize, unit] }
   end
 
   def edit
@@ -21,7 +20,7 @@ class TimeIntervalsController < ApplicationController
   
   def create
     @time_interval = TimeInterval.new(params[:time_interval])
-
+    
     if @time_interval.save
       flash[:notice] = 'Time Interval created'
       redirect_to time_intervals_path

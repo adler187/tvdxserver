@@ -14,6 +14,11 @@ class TimeInterval < ActiveRecord::Base
   acts_as_list
   default_scope :order => "position"
   
+  # Add it to the end. The user can change it later
+  before_validation( :on => :create ) do 
+    self.position = TimeInterval.maximum('position') + 1
+  end
+  
   def helpers
     ActionController::Base.helpers
   end
