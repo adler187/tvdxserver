@@ -12,62 +12,6 @@ end
 # ============================
 
 namespace :scanner do
-  config = YAML.load_file("#{Rails.root}/config/scan.yml")
-  if config.nil?
-    $stderr.puts "Couldn't load config file"
-    exit 1
-  end
-
-  env_config = config[Rails.env]
-  if env_config.nil?
-    $stderr.puts "No configuration for this environment specified"
-    exit 1
-  end
-
-  tuners = env_config['tuners']
-  if tuners.nil?
-    $stderr.puts "No tuner configuration specified"
-    exit 1
-  end
-  
-  # if not set, set to true (default)
-  env_config['log_results'] ||= true
-
-  # set to false to prevent inserting in database useful for testing
-  LOG_RESULTS = Boolean(env_config['log_results'])
-
-  # location of tuner
-  TUNER_LAT = env_config['latitude'].nil? ? nil : env_config['latitude'].to_f
-  TUNER_LON = env_config['longitude'].nil? ? nil : env_config['longitude'].to_f
-  LOCATION = !TUNER_LAT.nil? && !TUNER_LON.nil?
-  
-  WEB_SERVER = env_config['webserver']
-  if WEB_SERVER.nil?
-    $stderr.puts "No web server configuration specified"
-    exit 1
-  end
-  
-  USERNAME = env_config['username']
-  if USERNAME.nil?
-    $stderr.puts "No user name specified"
-    exit 1
-  end
-  
-  PASSWORD = env_config['password']
-  if PASSWORD.nil?
-    $stderr.puts "No password specified"
-    exit 1
-  end
-
-  # Distance to be considered a "DX"
-  DX_DISTANCE = 100
-
-  LOOP = Boolean(env_config['loop'])
-
-  # if not set, set to 60 seconds (default)
-  env_config['sleep_time'] ||= 60
-  SLEEP_TIME = env_config['sleep_time']
-  
   def log_output(log, message)
     if log.nil?
       puts message
@@ -358,6 +302,62 @@ namespace :scanner do
     require 'ffi-hdhomerun'
     require 'open-uri'
     require 'rest-client'
+    
+    config = YAML.load_file("#{Rails.root}/config/scan.yml")
+  if config.nil?
+    $stderr.puts "Couldn't load config file"
+    exit 1
+  end
+
+  env_config = config[Rails.env]
+  if env_config.nil?
+    $stderr.puts "No configuration for this environment specified"
+    exit 1
+  end
+
+  tuners = env_config['tuners']
+  if tuners.nil?
+    $stderr.puts "No tuner configuration specified"
+    exit 1
+  end
+  
+  # if not set, set to true (default)
+  env_config['log_results'] ||= true
+
+  # set to false to prevent inserting in database useful for testing
+  LOG_RESULTS = Boolean(env_config['log_results'])
+
+  # location of tuner
+  TUNER_LAT = env_config['latitude'].nil? ? nil : env_config['latitude'].to_f
+  TUNER_LON = env_config['longitude'].nil? ? nil : env_config['longitude'].to_f
+  LOCATION = !TUNER_LAT.nil? && !TUNER_LON.nil?
+  
+  WEB_SERVER = env_config['webserver']
+  if WEB_SERVER.nil?
+    $stderr.puts "No web server configuration specified"
+    exit 1
+  end
+  
+  USERNAME = env_config['username']
+  if USERNAME.nil?
+    $stderr.puts "No user name specified"
+    exit 1
+  end
+  
+  PASSWORD = env_config['password']
+  if PASSWORD.nil?
+    $stderr.puts "No password specified"
+    exit 1
+  end
+
+  # Distance to be considered a "DX"
+  DX_DISTANCE = 100
+
+  LOOP = Boolean(env_config['loop'])
+
+  # if not set, set to 60 seconds (default)
+  env_config['sleep_time'] ||= 60
+  SLEEP_TIME = env_config['sleep_time']
   
     puts "Scanning ..."
     threads = []
