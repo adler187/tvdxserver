@@ -1,12 +1,5 @@
 #!/usr/bin/env ruby
 
-require 'rubygems'
-require 'yaml'
-require 'haversine'
-require 'ffi-hdhomerun'
-require 'open-uri'
-require 'rest-client'
-
 # ============================
 # from http://chrisroos.co.uk/blog/2006-10-20-boolean-method-in-ruby-sibling-of-array-float-integer-and-string
 module Kernel
@@ -359,6 +352,13 @@ namespace :scanner do
 
   desc "Scan HDHomeRun tuners"
   task :scan => :environment do
+    require 'rubygems'
+    require 'yaml'
+    require 'haversine'
+    require 'ffi-hdhomerun'
+    require 'open-uri'
+    require 'rest-client'
+  
     puts "Scanning ..."
     threads = []
     tuners.each do |name, tuner|
