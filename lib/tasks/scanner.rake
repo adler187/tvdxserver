@@ -5,6 +5,7 @@ require 'yaml'
 require 'haversine'
 require 'ffi-hdhomerun'
 require 'open-uri'
+require 'rest-client'
 
 # ============================
 # from http://chrisroos.co.uk/blog/2006-10-20-boolean-method-in-ruby-sibling-of-array-float-integer-and-string
@@ -46,6 +47,24 @@ namespace :scanner do
   TUNER_LAT = env_config['latitude'].nil? ? nil : env_config['latitude'].to_f
   TUNER_LON = env_config['longitude'].nil? ? nil : env_config['longitude'].to_f
   LOCATION = !TUNER_LAT.nil? && !TUNER_LON.nil?
+  
+  WEB_SERVER = env_config['webserver']
+  if WEB_SERVER.nil?
+    $stderr.puts "No web server configuration specified"
+    exit 1
+  end
+  
+  USERNAME = env_config['username']
+  if USERNAME.nil?
+    $stderr.puts "No user name specified"
+    exit 1
+  end
+  
+  PASSWORD = env_config['password']
+  if PASSWORD.nil?
+    $stderr.puts "No password specified"
+    exit 1
+  end
 
   # Distance to be considered a "DX"
   DX_DISTANCE = 100
@@ -70,8 +89,25 @@ namespace :scanner do
   #     IO.sync = false
   #     log = File.new(tuner.gsub('/', '') + ".log", "w+")
     end
-        
-    tuner_obj = Tuner.first(:conditions => ['tuner_id = ? and tuner_number = ?', tuner_config['id'], tuner_config['tuner']])
+    
+    
+    begin
+      resource = RestClient::Resource.new("#{WEB_SERVER}/tuners/?tuner_id=#{tuner_config['id']}&tuner_number=#{tuner_config['tuner']}", :user => USERNAME, :password => PASSWORD)
+      response = resource.get(:accept => :json)
+    rescue => e
+      puts e.response
+      return
+    end
+    
+    json = JSON.parse response
+    
+    if json.length > 1
+      puts "Found too many results for tuners, JSON:"
+      p json
+      return
+    end
+    
+    tuner_obj = json[0]['tuner']
     if tuner_obj.nil?
       $stderr.puts "No tuner in database yet!"
       exit
@@ -98,9 +134,27 @@ namespace :scanner do
           program = result.programs[0]
           
           puts "found station: #{program.name} with virtual channel #{program.major}. Using PSIP program number #{program.number}"
+          
+          begin
+            resource = RestClient::Resource.new("#{WEB_SERVER}/stations?tsid=#{result.tsid}&display=#{program.major}&rf=#{result.channel}", :user => USERNAME, :password => PASSWORD)
+            response = resource.get(:accept => :json)
+          rescue => e
+            p e.response
+            return
+          end
 
-          station = Station.first(:conditions => ['tsid = ? and rf = ? and display = ?', result.tsid, result.channel, program.major])
-
+          json = JSON.parse response
+          
+          if json.length > 1
+            puts "Found too many results for station, JSON:"
+            p json
+            return
+          elsif json.length < 1
+            station = nil
+          else
+            station = json[0]['station']
+          end
+          
           if station.nil?
             new_station = true
             if result.tsid == '0x0001'
@@ -120,12 +174,15 @@ namespace :scanner do
             else
               log_output(log, "getting callsign from rabbitears for tsid #{result.tsid}")
               
-              data = open(URI.parse 'http://www.rabbitears.info/oddsandends.php?request=tsid')
-              
+              begin
+                response = RestClient.get 'http://www.rabbitears.info/oddsandends.php?request=tsid'
+              rescue => e
+                p e.response
+                next
+              end
               # TODO: log results for later
-              next if data.nil?
 
-              if data_match = data.read.match(/<td>#{result.tsid}&nbsp;<\/td><td><a href=(?:'|")\/market\.php\?request=station_search&callsign=\d+(?:'|")>((?:[CWKX][A-Z]{2,3})|(?:[KW]\d{1,2}[A-Z]{2}))(?:-(?:(?:TV)|(?:DT)))?<\/a>&nbsp;<\/td><td align='right'>(\d+)(?:&nbsp;)*<\/td><td align='right'>(\d+)/)
+              if data_match = response.match(/<td>#{result.tsid}&nbsp;<\/td><td><a href=(?:'|")\/market\.php\?request=station_search&callsign=\d+(?:'|")>((?:[CWKX][A-Z]{2,3})|(?:[KW]\d{1,2}[A-Z]{2}))(?:-(?:(?:TV)|(?:DT)))?<\/a>&nbsp;<\/td><td align='right'>(\d+)(?:&nbsp;)*<\/td><td align='right'>(\d+)/)
                 callsign = data_match[1]
                 realdisp = data_match[2]
                 realrf = data_match[3]
@@ -152,12 +209,15 @@ namespace :scanner do
             # cha2: upper bound on channel number to search
             # type: (3) Only licenced stations, no CPs or pending aps
             # list: (4) Text ouput, pipe delimited
-            data = open(URI.parse "http://www.fcc.gov/fcc-bin/tvq?call=#{callsign}&chan=#{result.channel}&cha2=#{result.channel}&list=4")
-            
+            begin
+              response = RestClient.get "http://www.fcc.gov/fcc-bin/tvq?call=#{callsign}&chan=#{result.channel}&cha2=#{result.channel}&list=4"
+            rescue => e
+              p e.response
+              return
+            end
             # TODO: log results for later
-            next if data.nil?
             
-            lines = data.read.strip.split("\n")
+            lines = response.strip.split("\n")
             
             if lines.length == 0
               log_output(log, "Found a translator of callsign on channel #{result.channel} at #{scan_time}, add manually")
@@ -229,33 +289,58 @@ namespace :scanner do
             puts "#{callsign}: #{latitude}, #{longitude}, #{distance}"
 
             if LOG_RESULTS
-              station = Station.create(
-                :tsid => result.tsid,
-                :callsign => callsign,
-                :parent_callsign => nil,
-                :rf => result.channel.to_i,
-                :display => program.major.to_i,
-                :latitude => latitude,
-                :longitude => longitude,
-                :distance => distance
-              )
-
-              if !station.save
-                station.errors
+              begin
+                station = {
+                  :tsid => result.tsid,
+                  :callsign => callsign,
+                  :parent_callsign => nil,
+                  :rf => result.channel.to_i,
+                  :display => program.major.to_i,
+                  :latitude => latitude,
+                  :longitude => longitude,
+                  :distance => distance
+                }
+                resource = RestClient::Resource.new("#{WEB_SERVER}/stations", :user => USERNAME, :password => PASSWORD)
+                response = resource.post({:station => station}.to_json, :content_type => :json, :accept => :json)
+                
+                json = JSON.parse response
+                
+                if json['success']
+                  station = json['station']
+                end
+                puts "Created station ##{station['id']}"
+                
+              rescue => e
+                # TODO: Add proper logging here
+                p e.response
+                return
               end
             end
           end
 
           if (true || distance > DX_DISTANCE || new_station)
-            result_log = Log.create(
-              :signal_strength => result.status.signal_strength,
-              :signal_to_noise => result.status.signal_to_noise,
-              :signal_quality => result.status.symbol_error_rate,
-              :station => station,
-              :tuner => tuner_obj
-            )
-            if !result_log.save
-              result_log.errors
+            begin
+              log_entry = {
+                :signal_strength => result.status.signal_strength,
+                :signal_to_noise => result.status.signal_to_noise,
+                :signal_quality => result.status.symbol_error_rate,
+                :station_id => station['id'],
+                :tuner_id => tuner_obj['id']
+              }
+              resource = RestClient::Resource.new("#{WEB_SERVER}/logs", :user => USERNAME, :password => PASSWORD)
+              response = resource.post({:log => log_entry}.to_json, :content_type => :json, :accept => :json)
+              
+              json = JSON.parse response
+              
+              if json['success']
+                log_entry = json['log']
+              end
+              puts "Created log ##{log_entry['id']}"
+
+            rescue => e
+              # TODO: Add proper logging here
+              p e.response
+              return
             end
           end
         end
@@ -275,10 +360,8 @@ namespace :scanner do
   desc "Scan HDHomeRun tuners"
   task :scan => :environment do
     puts "Scanning ..."
-    p tuners
     threads = []
     tuners.each do |name, tuner|
-      p tuner
       threads << Thread.new(tuner) do |myTuner|
         scan(myTuner)
       end

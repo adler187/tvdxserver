@@ -38,4 +38,5 @@ gem 'jquery-rails'
 
 group :scan do
   gem 'ffi-hdhomerun'
+  gem 'rest-client'
 end
