@@ -26,9 +26,6 @@ class Tuner < ActiveRecord::Base
 	
 # 	query = logs.includes(:station).select('stations.callsign').group('stations.callsign')
 # 	query = query.where('logs.created_at > ?', time_interval.date_range.begin.utc) unless time_interval.all_interval?
-# 	
-# 	return query
-  
     if time_interval.all_interval?
       logs
     else
