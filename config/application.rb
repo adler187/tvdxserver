@@ -6,6 +6,8 @@ require 'rails/all'
 # you've limited to :test, :development, or :production.
 Bundler.require(:default, Rails.env) if defined?(Bundler)
 
+HEROKU = !ENV['DATABASE_URL'].nil?
+
 module Tvscanner
   class Application < Rails::Application
     # Settings in config/environments/* take precedence over those specified here.
@@ -39,12 +41,14 @@ module Tvscanner
     # Configure sensitive parameters which will be filtered from the log file.
     config.filter_parameters += [:password]
 	
-	config.time_zone = 'Central Time (US & Canada)'
+    config.time_zone = 'Central Time (US & Canada)'
     
     # Enable the asset pipeline
     # config.assets.enabled = true
     
     # Version of your assets, change if you want to expire all your assets
     # config.assets.version = '1.0'
+  
+    config.logger = Logger.new(STDOUT) if HEROKU
   end
 end
