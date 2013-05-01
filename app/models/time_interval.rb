@@ -16,7 +16,7 @@ class TimeInterval < ActiveRecord::Base
   
   # Add it to the end. The user can change it later
   before_validation( :on => :create ) do 
-    self.position = TimeInterval.maximum('position') + 1
+    self.position = TimeInterval.maximum('position').to_i + 1
   end
   
   def helpers
