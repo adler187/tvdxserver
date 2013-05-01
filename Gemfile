@@ -10,6 +10,8 @@ end
 # Assume deploying to Heroku if the 
 # DATABASE_URL environment variable is set
 HEROKU = !ENV['DATABASE_URL'].nil?
+p ENV
+
 if HEROKU
   group :production do
     gem 'pg'
