@@ -10,6 +10,9 @@ group :production do
   gem 'mysql2'
 end
 
+group :heroku do
+  gem 'pg'
+end
 
 gem 'acts_as_list'
 
