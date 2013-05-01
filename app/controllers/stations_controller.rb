@@ -47,12 +47,17 @@ class StationsController < ApplicationController
   def create
     @station = Station.new(params[:station])
 
-    if @station.save
-      flash[:notice] = 'Station created'
-      redirect_to stations_path
-    else
-      flash[:error] = 'Error creating Station'
-      render :action => 'new'
+    respond_to do |format|
+      if @station.save
+        flash[:notice] = 'Station created'
+        format.html { redirect_to stations_path }
+        format.json { render :json => { :success => true, :request => stations_path, :station => @station.attributes } }
+      else
+        flash[:error] = 'Error creating Station'
+        
+        format.html { render :action => 'new' }
+        format.json { render :json => { :success => false, :request => stations_path } }
+      end
     end
   end
 

@@ -20,13 +20,19 @@ class LogsController < ApplicationController
   
   def create
     @log = Log.new(params[:log])
-
-    if @log.save
-      flash[:notice] = 'Log was successfully created'
-      redirect_to logs_path
-    else
-      flash[:notice] = 'Log was successfully created'
-      render :action => "new"
+    
+    respond_to do |format|
+      if @log.save
+        flash[:notice] = 'Log created'
+        
+        format.html { redirect_to logs_path }
+        format.json { render :json => { :success => true, :request => logs_path, :log => @log.attributes } }
+      else
+        flash[:error] = 'Error creating Log'
+        
+        format.html { render :action => 'new' }
+        format.json { render :json => { :success => false, :request => logs_path } }
+      end
     end
 	end
 
