@@ -7,19 +7,12 @@ group :development, :test do
 	gem 'sqlite3'
 end
 
-# Assume deploying to Heroku if the 
-# DATABASE_URL environment variable is set
-HEROKU = !ENV['DATABASE_URL'].nil?
-p ENV
+group :heroku do
+  gem 'pg'
+end
 
-if HEROKU
-  group :production do
-    gem 'pg'
-  end
-else
-  group :production do
-    gem 'mysql2'
-  end
+group :production do
+  gem 'mysql2'
 end
 
 group :scan do
