@@ -1,45 +1,45 @@
 <% require 'maps' %>
 
 (function(){
-	map.removeMarkers();
-	
-	var list = $('#logs-list');
-	list.empty();
-	
+  map.removeMarkers();
+  
+  var list = $('#logs-list');
+  list.empty();
+  
 <% @logs.each do |log| %>
 
-	var infoWindow = new google.maps.InfoWindow({ content: '<%= raw info_window(log) %>' });
+  var infoWindow = new google.maps.InfoWindow({ content: '<%= raw info_window(log) %>' });
 
-	google.maps.event.addListener(infoWindow, 'closeclick', map.clearActiveMarker.bind(map));
+  google.maps.event.addListener(infoWindow, 'closeclick', map.clearActiveMarker.bind(map));
 
-	var marker = map.addMarker
-	(
-		{
-			position: new google.maps.LatLng(<%= log.station.latitude %>, <%= log.station.longitude %>),
-			draggable: false,
-			clickable: true,
-			title: "<%= log.station.callsign %>",
-			zIndex: 0,
-			icon: "<%= get_marker_image(log.signal_strength) %>",
-			infoWindow: infoWindow
-		}
-	);
+  var marker = map.addMarker
+  (
+    {
+      position: new google.maps.LatLng(<%= log.station.latitude %>, <%= log.station.longitude %>),
+      draggable: false,
+      clickable: true,
+      title: "<%= log.station.callsign %>",
+      zIndex: 0,
+      icon: "<%= get_marker_image(log.signal_strength) %>",
+      infoWindow: infoWindow
+    }
+  );
 
-	google.maps.event.addListener(marker, 'click', marker.click.bind(marker));
+  google.maps.event.addListener(marker, 'click', marker.click.bind(marker));
 
-	var item = document.createElement('span');
-	item.innerHTML = '<%= log.station.callsign %>';
+  var item = document.createElement('span');
+  item.innerHTML = '<%= log.station.callsign %>';
 
-	item.className = 'clickable';
+  item.className = 'clickable';
 
-	$(item).click(marker.click.bind(marker));
-	
-// 	Event.observe(item, 'click', marker.click.bind(marker));
+  $(item).click(marker.click.bind(marker));
+  
+//   Event.observe(item, 'click', marker.click.bind(marker));
 
-	var list_item = document.createElement('li');
-	$(list_item).append(item);
-	
-	list.append(list_item);
+  var list_item = document.createElement('li');
+  $(list_item).append(item);
+  
+  list.append(list_item);
 
 <% end %>
 

@@ -1,6 +1,6 @@
 class TimeInterval < ActiveRecord::Base
-	@@VALID_UNITS = %w( month day year hour minute second )
-	
+  @@VALID_UNITS = %w( month day year hour minute second )
+  
   validates_inclusion_of :unit, :in => @@VALID_UNITS, :message => "%s is not a valid unit", :allow_nil => true
   
   validates_uniqueness_of :interval, :scope => :unit
@@ -23,17 +23,17 @@ class TimeInterval < ActiveRecord::Base
     ActionController::Base.helpers
   end
   
-	def self.valid_units
-		@@VALID_UNITS
-	end
+  def self.valid_units
+    @@VALID_UNITS
+  end
 
-	def date_range
-		if self.unit.nil?
-			return Time.at(0)..Time.now
-		else
-			return self.interval.method(self.unit).call.ago..Time.now
-		end
-	end
+  def date_range
+    if self.unit.nil?
+      return Time.at(0)..Time.now
+    else
+      return self.interval.method(self.unit).call.ago..Time.now
+    end
+  end
   
   def description
     if(all_interval?)

@@ -4,7 +4,7 @@ gem 'rails', '~> 3.2.0'
 
 group :development, :test do
   gem 'capistrano'
-	gem 'sqlite3'
+  gem 'sqlite3'
 end
 
 group :heroku do

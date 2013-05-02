@@ -31,12 +31,12 @@ class TunersController < ApplicationController
   end
   
   def create
-		tuner_params = params[:tuner]
-		info_params = tuner_params[:tuner_info]
-		tuner_params.delete(:tuner_info)
-		
-		@tuner = Tuner.new(tuner_params)
-		@tuner_info = @tuner.tuner_info.build(info_params)
+    tuner_params = params[:tuner]
+    info_params = tuner_params[:tuner_info]
+    tuner_params.delete(:tuner_info)
+    
+    @tuner = Tuner.new(tuner_params)
+    @tuner_info = @tuner.tuner_info.build(info_params)
 
     if @tuner.save
       flash[:notice] = 'Tuner was successfully created'
@@ -45,7 +45,7 @@ class TunersController < ApplicationController
       flash[:notice] = 'Tuner was successfully created'
       render :action => "new"
     end
-	end
+  end
 
   def update
     @tuner = Tuner.find(params[:id])

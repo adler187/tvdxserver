@@ -1,3 +1,3 @@
 class TunerInfo < ActiveRecord::Base
-	belongs_to :tuner
+  belongs_to :tuner
 end

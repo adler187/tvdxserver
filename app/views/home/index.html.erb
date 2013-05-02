@@ -1,16 +1,16 @@
 <div id='top'>
 <%= form_tag request.fullpath, :id => 'options_form' do %>
-	<%= label_tag 'tuner_id', 'Tuner:' %>
-	<%= collection_select(:tuner, :id, Tuner.all, :id, :full_name) %>
-	<%= label_tag 'time_interval_id', 'Results since:' %>
-	<%= collection_select(:time_interval, :id, TimeInterval.all, :id, :description) %>
-	<%= submit_tag 'Update', :id => 'submit' %>
+  <%= label_tag 'tuner_id', 'Tuner:' %>
+  <%= collection_select(:tuner, :id, Tuner.all, :id, :full_name) %>
+  <%= label_tag 'time_interval_id', 'Results since:' %>
+  <%= collection_select(:time_interval, :id, TimeInterval.all, :id, :description) %>
+  <%= submit_tag 'Update', :id => 'submit' %>
 <%= image_tag 'throbber.gif', :class => 'hidden', :id => 'throbber', :style => 'display: inline' %>
 <% end %>
 </div>
 <div id='content'>
-	<div id='map-wrapper'><div id='map'></div></div>
-	<div id='logs'>
-		<ul id='logs-list'></ul>
-	</div>
+  <div id='map-wrapper'><div id='map'></div></div>
+  <div id='logs'>
+    <ul id='logs-list'></ul>
+  </div>
 </div>

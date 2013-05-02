@@ -1,5 +1,5 @@
 class StationsController < ApplicationController
-	
+  
   before_filter :authenticate
 
   def index
@@ -86,7 +86,7 @@ class StationsController < ApplicationController
   
   def destroy_all
     Station.destroy_all
-	  
+    
     redirect_to(stations_url)
   end
 end

@@ -34,7 +34,7 @@ class LogsController < ApplicationController
         format.json { render :json => { :success => false, :request => logs_path } }
       end
     end
-	end
+  end
 
   def update
     @log = Log.find(params[:id])
