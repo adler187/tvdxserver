@@ -24,6 +24,11 @@
 		
 		$('#options_form').submit(function(event) {
 			form = this;
+      
+			// serialize the data before we disable the form elements,
+			// otherwise nothing will get serialized
+			var data = $(form).serialize();
+      
 			var throbber = $('#throbber');
 			
 			throbber.removeClass('hidden');
@@ -34,7 +39,7 @@
 				dataType: 'script',
 				type: 'POST',
 				url: form.action,
-				data: $(form).serialize(),
+				data: data,
 				complete: function() {
 					throbber.addClass('hidden');
 // 					$(form).removeAttr('disabled');
