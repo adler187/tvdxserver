@@ -28,4 +28,4 @@ end
 
 gem 'acts_as_list'
 gem 'jquery-rails'
-gem 'figaro'
+gem "figaro", "~> 0.6.4"
