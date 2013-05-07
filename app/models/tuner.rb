@@ -19,6 +19,8 @@ class Tuner < ActiveRecord::Base
   def logs_since(time_interval)    
     query = RecentLog.where(:tuner_id => id)
     
-    query.where('created_at > ? ', time_interval.date_range.begin.utc) unless time_interval.all_interval?
+    query = query.where('created_at > ? ', time_interval.date_range.begin.utc) unless time_interval.all_interval?
+    
+    return query
   end
 end
