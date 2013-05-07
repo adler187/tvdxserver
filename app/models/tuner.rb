@@ -16,20 +16,9 @@ class Tuner < ActiveRecord::Base
     "#{tuner_id}:#{tuner_number}"
   end
   
-  def logs_since(time_interval)
-#     logs.all(
-#       :select => 'logs.*, max(logs.created_at) as log_time, stations.callsign',
-#       :group => 'stations.callsign',
-#       :include => [ :station ],
-#       :conditions => time_interval.all_interval? ? nil : ['logs.created_at > ?', time_interval.date_range.begin.utc]
-#     )
-  
-#   query = logs.includes(:station).select('stations.callsign').group('stations.callsign')
-#   query = query.where('logs.created_at > ?', time_interval.date_range.begin.utc) unless time_interval.all_interval?
-    if time_interval.all_interval?
-      logs
-    else
-      logs.where('logs.created_at > ?', time_interval.date_range.begin.utc) unless time_interval.all_interval?
-    end
+  def logs_since(time_interval)    
+    query = RecentLog.where(:tuner_id => id)
+    
+    query.where('created_at > ? ', time_interval.date_range.begin.utc) unless time_interval.all_interval?
   end
 end

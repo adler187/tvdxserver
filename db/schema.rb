@@ -1,3 +1,4 @@
+# encoding: UTF-8
 # This file is auto-generated from the current state of the database. Instead
 # of editing this file, please use the migrations feature of Active Record to
 # incrementally modify your database, and then regenerate this schema definition.
@@ -10,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20130501021509) do
+ActiveRecord::Schema.define(:version => 20130507054708) do
 
   create_table "logs", :force => true do |t|
     t.integer  "signal_strength", :limit => 4
@@ -23,6 +24,18 @@ ActiveRecord::Schema.define(:version => 20130501021509) do
   end
 
   add_index "logs", ["created_at"], :name => "index_logs_on_created_at"
+
+  create_table "recent_logs", :force => true do |t|
+    t.integer  "signal_strength", :limit => 4
+    t.integer  "signal_to_noise", :limit => 4
+    t.integer  "signal_quality",  :limit => 4
+    t.integer  "station_id"
+    t.integer  "tuner_id"
+    t.datetime "created_at",                   :null => false
+    t.datetime "updated_at",                   :null => false
+  end
+
+  add_index "recent_logs", ["station_id", "tuner_id"], :name => "index_recent_logs_on_station_id_and_tuner_id", :unique => true
 
   create_table "stations", :force => true do |t|
     t.string  "tsid",            :limit => 6
