@@ -7,12 +7,8 @@ group :development, :test do
   gem 'sqlite3'
 end
 
-group :heroku do
-  gem 'pg'
-end
-
 group :production do
-  gem 'mysql2'
+  gem 'pg'
 end
 
 group :scan do
