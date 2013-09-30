@@ -55,6 +55,9 @@ GEM
       railties (>= 3.0, < 5.0)
       thor (>= 0.14, < 2.0)
     json (1.8.0)
+    kaminari (0.14.1)
+      actionpack (>= 3.0.0)
+      activesupport (>= 3.0.0)
     mail (2.5.4)
       mime-types (~> 1.16)
       treetop (~> 1.4.8)
@@ -124,6 +127,7 @@ DEPENDENCIES
   ffi-hdhomerun
   figaro (~> 0.6.4)
   jquery-rails
+  kaminari
   pg
   rails (~> 3.2.0)
   rest-client

@@ -3,7 +3,7 @@ class LogsController < ApplicationController
   before_filter :authenticate
   
   def index
-    @logs = Log.all
+    @logs = Log.page(params[:page])
   end
 
   def show

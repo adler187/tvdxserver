@@ -25,3 +25,5 @@ end
 gem 'acts_as_list'
 gem 'jquery-rails'
 gem "figaro", "~> 0.6.4"
+
+gem 'kaminari'
