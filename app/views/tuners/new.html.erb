@@ -5,13 +5,25 @@
 
   <p>
     <%= tuner_form.label :tuner_id %>
-  <%= tuner_form.text_field :tuner_id %>
+    <%= tuner_form.text_field :tuner_id %>
   </p>
   <p>
     <%= tuner_form.label :tuner_number %>
     <%= tuner_form.text_field :tuner_number %>
   </p>
+  <p>
+    <%= tuner_form.label :name %>
+    <%= tuner_form.text_field :name %>
+  </p>
   <%= tuner_form.fields_for @tuner.tuner_info.build do |info_form| %>
+    <p>
+      <%= info_form.label :lattitude %>
+      <%= info_form.text_field :lattitude %>
+    </p>
+    <p>
+      <%= info_form.label :longitude %>
+      <%= info_form.text_field :longitude %>
+    </p>
     <p>
       <%= info_form.label :info %><br />
       <%= info_form.text_area :info %>

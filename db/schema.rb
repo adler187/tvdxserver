@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131001025241) do
+ActiveRecord::Schema.define(:version => 20131001030453) do
 
   create_table "logs", :force => true do |t|
     t.integer  "signal_strength", :limit => 4
@@ -68,6 +68,7 @@ ActiveRecord::Schema.define(:version => 20131001025241) do
     t.string  "tuner_id",     :limit => 10
     t.integer "tuner_number", :limit => 1
     t.integer "position"
+    t.string  "name"
   end
 
 end
