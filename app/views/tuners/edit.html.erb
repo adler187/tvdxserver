@@ -6,7 +6,7 @@
 
   <p>
     <%= tuner_form.label :tuner_id %>:
-  <%= @tuner.tuner_id %>
+    <%= @tuner.tuner_id %>
     <%= tuner_form.hidden_field :tuner_id %>
   </p>
   <p>
@@ -14,8 +14,16 @@
     <%= @tuner.tuner_number %>
     <%= tuner_form.hidden_field :tuner_number %>
   </p>
+  <p>
+    <%= tuner_form.label :name %>:
+    <%= tuner_form.text_field :name %><br />
+  </p>
   <%= tuner_form.fields_for @tuner.current do |info_form| %>
     <p>
+      <%= info_form.label :lattitude %>
+      <%= info_form.text_field :lattitude %><br />
+      <%= info_form.label :longitude %>
+      <%= info_form.text_field :longitude %><br />
       <%= info_form.label :info %><br />
       <%= info_form.text_area :info %>
     </p>
