@@ -1,4 +1,4 @@
-<% title "Tuner #{@tuner.full_name}" %>
+<% title @tuner.name %>
 <p>
   <b>Tuner:</b>
   <%=h @tuner.tuner_id %>
@@ -9,7 +9,22 @@
   <%=h @tuner.tuner_number %>
 </p>
 
+<p>
+  <b>Lattitude</b>
+  <%=h @tuner_info.lattitude %>
+</p>
 
+<p>
+  <b>Longitude</b>
+  <%=h @tuner_info.longitude %>
+</p>
+
+<p>
+  <b>Info:</b>
+  <div>
+    <%=h @tuner_info.info %>
+  </div>
+</p>
 <%= link_to 'Edit', edit_tuner_path(@tuner) %> |
 <%= link_to 'Destroy', @tuner, :data => { :confirm => 'Are you sure?' }, :method => :delete %> |
 <%= link_to 'Back', tuners_path %>

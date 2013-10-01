@@ -26,6 +26,8 @@ class TunersController < ApplicationController
       @tuner = Tuner.where(:tuner_id => params[:tuner_id], :tuner_number => params[:tuner_number]).first
     end
     
+    @tuner_info = @tuner.tuner_info.last
+    
     respond_to do |format|
       format.html
       format.json { render :json => @tuner }
