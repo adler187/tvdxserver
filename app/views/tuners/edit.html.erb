@@ -1,27 +1,5 @@
 <% title "Editing #{@tuner.tuner_number}" %>
 
-<script>
-$(function () {
-  $('[data-toggle-group]').each(function() {
-    var element = $(this);
-    var group = element.data('toggle-group');
-    
-    var toggle = function() {
-      $('.' + group).each(function() {
-        var value = !element.prop('checked');
-        $(this).prop('disabled', value);
-      });
-    };
-    
-    toggle();
-    
-    element.click(function() {
-      toggle();
-    });
-  });
-});
-</script>
-
 <% @tuner.tuner_info.build if @tuner.tuner_info.empty? %>
 <%= form_for(@tuner) do |tuner_form| %>
   <%= render 'shared/error_messages', :target => @tuner %>

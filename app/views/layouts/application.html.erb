@@ -2,9 +2,8 @@
 <html>
 <head>
   <title><%= yield(:title) %></title>
-  <%= stylesheet_link_tag 'scaffold' %>
   <%= stylesheet_link_tag 'application' %>
-  <%= javascript_include_tag :defaults %>
+  <%= javascript_include_tag 'application' %>
     
   <%= yield(:head) %>
   <%= csrf_meta_tag %>
