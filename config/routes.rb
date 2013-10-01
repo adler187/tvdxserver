@@ -22,6 +22,8 @@ Tvscanner::Application.routes.draw do
     end
   end
   
+  match "/tuners/:tuner_id/:tuner_number" => "tuners#show", :constraints => { :tuner_id => /[a-fA-F0-9]+/, :tuner_number => /\d+/ }
+  
   resources :stations do
     collection do
       delete :destroy_all

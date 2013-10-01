@@ -19,7 +19,17 @@ class TunersController < ApplicationController
   end
 
   def show
-    @tuner = Tuner.find(params[:id])
+    id = params[:id]
+    if !id.nil?
+      @tuner = Tuner.find(id)
+    else
+      @tuner = Tuner.where(:tuner_id => params[:tuner_id], :tuner_number => params[:tuner_number]).first
+    end
+    
+    respond_to do |format|
+      format.html
+      format.json { render :json => @tuner }
+    end
   end
 
   def new
