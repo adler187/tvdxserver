@@ -63,9 +63,26 @@ class TunersController < ApplicationController
     @tuner = Tuner.find(params[:id])
     info_params = params[:tuner][:tuner_info]
     
-    @tuner_info = @tuner.tuner_info.build(info_params)
+    params[:update] = false if params[:update].nil?
+    params[:new] = false if params[:new].nil?
+    
+    if params[:update]
+      if params[:new]
+        @tuner_info = @tuner.tuner_info.build(info_params)
+      else
+        @tuner_info = @tuner.tuner_info.last
+        @tuner_info.update_attributes(info_params)
+      end
+      
+      if !@tuner_info.save
+        flash[:error] = 'Tuner was not updated'
+        render :action => "edit" 
+      end
+    end
 
-    if @tuner_info.save
+    @tuner.update_attributes(name: params[:tuner][:name])
+    
+    if @tuner.save
       flash[:notice] = 'Tuner was successfully updated'
       redirect_to(@tuner)
     else
