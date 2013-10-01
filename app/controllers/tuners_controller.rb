@@ -30,7 +30,11 @@ class TunersController < ApplicationController
     
     respond_to do |format|
       format.html
-      format.json { render :json => @tuner }
+      format.json do
+        json = @tuner.attributes
+        json[:info] = @tuner_info.attributes
+        render :json => json
+      end
     end
   end
 
