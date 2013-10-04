@@ -4,7 +4,7 @@
   <%= render 'shared/error_messages', :target => @log %>
  <p>
     <%= f.label :tuner %>
-    <%= collection_select(:log, :tuner_id, Tuner.all, :id, :full_name) %>
+    <%= collection_select(:log, :tuner_id, Tuner.all, :id, :name) %>
   </p>
   <p>
     <%= f.label :station %>
