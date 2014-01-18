@@ -51,7 +51,10 @@ class StationsController < ApplicationController
       if @station.save
         flash[:notice] = 'Station created'
         format.html { redirect_to stations_path }
-        format.json { render :json => { :success => true, :request => stations_path, :station => @station.attributes } }
+        format.json do
+          Mailer.new_station_mail(@station).deliver
+          render :json => { :success => true, :request => stations_path, :station => @station.attributes }
+        end
       else
         flash[:error] = 'Error creating Station'
         
