@@ -1,1 +1,41 @@
-<div id="container" style="width: 100%; height: 400px"></div>
+<script>
+var data = [
+<% @data.each do |entry| %>
+  <% if entry.nil? %>
+    <%= "null, " %>
+  <% else %>
+    <%= "[ #{entry[:created_at].to_i * 1000}, #{entry[:signal_strength]} ], " %>
+  <% end %>
+<% end %>
+];
+
+var plot1 = {
+    data: data,
+    bars: { show: true }
+};
+
+var options = {
+    xaxis: {
+        mode: "time",
+        minTickSize: [1, "day"],
+        timeformat: "%Y-%m-%d"
+    }
+}
+
+$(document).ready(function () {
+//   alert('asdf');
+    
+    $.plot("#container", [ plot1 ], options);
+});
+</script>
+<style>
+.demo-container {
+  width: 850px;
+  height: 450px;
+  padding: 20px 15px 15px 15px;
+  margin: 15px auto 30px auto;
+  border: 1px solid #ddd;
+  background: #fff;
+}
+</style>
+<div id="container" class="demo-container"></div>

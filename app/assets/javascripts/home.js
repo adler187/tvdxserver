@@ -1,5 +1,11 @@
+// Place your application-specific JavaScript functions and classes here
+// This file is automatically included by javascript_include_tag :defaults
+//= require jquery
+//= require jquery_ujs
+//= require maps
+//= require_self
+
 (function(){
-  
   function handleResize()
   {
     var height = self.innerHeight - $('#top').offset().top - $('#content').offset().top;

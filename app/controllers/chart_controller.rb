@@ -2,29 +2,25 @@ class ChartController < ApplicationController
   def index
     @station = params[:station_id].nil? ? Station.first : Station.find(params[:station_id])
     @tuner = params[:tuner_id].nil? ? Tuner.first : Tuner.find(params[:tuner_id])
-    @logs = Log.all(:conditions => ['station_id = ? and tuner_id = ?', @station.id, @tuner.id], :group => 'date(created_at)')
-
-    @data = []
-    i = 0
-    empty = {
-      :signal_strength => 0,
-      :signal_to_noise => 0,
-      :signal_quality => 0
-    }
+    @logs = Log.select('date(created_at) as created_at, avg(signal_strength) as signal_strength, avg(signal_to_noise) as signal_to_noise, avg(signal_quality) as signal_quality')
+               .where(station_id: @station.id)
+               .where(tuner_id: @tuner.id)
+               .where('created_at > ?', Time.now-30.days)
+               .group(1)
+               .order(1)
     
-    (@logs.first.created_at.to_date..@logs.last.created_at.to_date).each do |date|
-      log = @logs[i]
-      
-      if log.created_at.to_date == date
-        @data << {
-          :signal_strength => log.signal_strength,
-          :signal_to_noise => log.signal_to_noise,
-          :signal_quality => log.signal_quality
-        }
-        i += 1
-      else
-        @data << empty
-      end
+    @data = []
+    
+    prevlog = @logs.shift
+    @data.push prevlog
+    @logs.each do |log|
+        if (log.created_at - prevlog.created_at) > 86400
+            @data.push nil
+        end
+        
+        @data.push log
+        
+        prevlog = log
     end
 
     respond_to do |format|
@@ -32,3 +28,5 @@ class ChartController < ApplicationController
     end
   end
 end
+
+
