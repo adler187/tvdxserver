@@ -1,0 +1,66 @@
+var signal_strength_data = [
+<% @data.each do |entry| %>
+  <% if entry.nil? %>
+    <%= "null, " %>
+  <% else %>
+    <%= "[ #{entry[:created_at].to_i * 1000}, #{entry[:signal_strength]} ], " %>
+  <% end %>
+<% end %>
+];
+
+var signal_to_noise_data = [
+<% @data.each do |entry| %>
+  <% if entry.nil? %>
+    <%= "null, " %>
+  <% else %>
+    <%= "[ #{entry[:created_at].to_i * 1000}, #{entry[:signal_to_noise]} ], " %>
+  <% end %>
+<% end %>
+];
+
+var signal_quality_data = [
+<% @data.each do |entry| %>
+  <% if entry.nil? %>
+    <%= "null, " %>
+  <% else %>
+    <%= "[ #{entry[:created_at].to_i * 1000}, #{entry[:signal_quality]} ], " %>
+  <% end %>
+<% end %>
+];
+
+var signal_strength_plot = {
+    data: signal_strength_data,
+    lines: { show: true },
+    points: { show: true },
+    label: "Signal Strength"
+};
+
+var signal_to_noise_plot = {
+    data: signal_to_noise_data,
+    lines: { show: true },
+    points: { show: true },
+    label: "Signal to Noise"
+};
+
+var signal_quality_plot = {
+    data: signal_quality_data,
+    lines: { show: true },
+    points: { show: true },
+    label: "Signal Quality"
+};
+
+var options = {
+    xaxis: {
+        mode: "time",
+        minTickSize: [1, "day"],
+        timeformat: "%Y-%m-%d"
+    },
+    yaxis: {
+        min: 0,
+        max: 125
+    }
+}
+
+$(document).ready(function () {
+    $.plot("#plot", [ signal_strength_plot, signal_to_noise_plot, signal_quality_plot ], options);
+});

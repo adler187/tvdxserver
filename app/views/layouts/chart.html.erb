@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>CHART</title>
-  <% stylesheet_link_tag 'chart' %>
+  <title><%= yield(:title) %></title>
+  <%= stylesheet_link_tag 'chart' %>
   
   <%= javascript_include_tag 'chart' %>
 </head>
 <body>
+<h2><%= yield :title %></h2>
 <%= yield %>
 </body>
 </html>
