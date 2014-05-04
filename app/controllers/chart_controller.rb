@@ -15,9 +15,9 @@ class ChartController < ApplicationController
 
     log_index = 0
     date_range.each do |date|
-        if(@logs[log_index].created_at == date)
+        if(log_index < @logs.length && @logs[log_index].created_at == date)
             @data.push @logs[log_index]
-            log_index++
+            log_index += 1
         else
             @data.push nil
         end
