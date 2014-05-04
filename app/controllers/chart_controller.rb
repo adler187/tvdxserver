@@ -11,16 +11,15 @@ class ChartController < ApplicationController
     
     @data = []
     
-    prevlog = @logs.shift
-    @data.push prevlog
-    @logs.each do |log|
-        if (log.created_at - prevlog.created_at) > 86400
+    date_range = (Date.today - 30.days) .. Date.today
+
+    log_index = 0
+    date_range.each do |date|
+        if(@logs[log_index].created_at == date)
+            @data.push @logs[log_index]
+        else
             @data.push nil
         end
-        
-        @data.push log
-        
-        prevlog = log
     end
 
     respond_to do |format|

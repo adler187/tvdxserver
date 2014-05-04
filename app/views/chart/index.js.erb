@@ -53,7 +53,9 @@ var options = {
     xaxis: {
         mode: "time",
         minTickSize: [1, "day"],
-        timeformat: "%Y-%m-%d"
+        timeformat: "%Y-%m-%d",
+        min: <%= (Date.today - 30.days).to_time.to_i * 1000 %>,
+        max: <%= Date.today.to_time.to_i * 1000 %>
     },
     yaxis: {
         min: 0,
