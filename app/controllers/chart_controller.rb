@@ -17,6 +17,7 @@ class ChartController < ApplicationController
     date_range.each do |date|
         if(@logs[log_index].created_at == date)
             @data.push @logs[log_index]
+            log_index++
         else
             @data.push nil
         end
