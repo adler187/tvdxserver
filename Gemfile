@@ -27,3 +27,5 @@ gem 'jquery-rails'
 gem "figaro", "~> 0.6.4"
 
 gem 'kaminari'
+
+gem 'vestal_versions'

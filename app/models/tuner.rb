@@ -2,6 +2,8 @@ class Tuner < ActiveRecord::Base
   has_many :logs
   has_many :stations, :through => :logs
 
+  versioned
+  
   acts_as_list
   default_scope :order => "position"
   

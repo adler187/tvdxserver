@@ -117,6 +117,9 @@ GEM
       polyglot
       polyglot (>= 0.3.1)
     tzinfo (0.3.37)
+    vestal_versions (2.0.0)
+      activerecord (>= 3, < 5)
+      activesupport (>= 3, < 5)
 
 PLATFORMS
   ruby
@@ -132,3 +135,4 @@ DEPENDENCIES
   rails (~> 3.2.0)
   rest-client
   sqlite3
+  vestal_versions
