@@ -2,7 +2,7 @@ class Tuner < ActiveRecord::Base
   has_many :logs
   has_many :stations, :through => :logs
 
-  versioned
+  versioned :if => :version?
   
   acts_as_list
   default_scope :order => "position"
@@ -17,5 +17,9 @@ class Tuner < ActiveRecord::Base
     query = query.where('updated_at > ? ', time_interval.date_range.begin) unless time_interval.all_interval?
     
     return query
+  end
+  
+  def version?
+    @version ||= ActiveRecord::Base.connection.table_exists? 'versions'
   end
 end

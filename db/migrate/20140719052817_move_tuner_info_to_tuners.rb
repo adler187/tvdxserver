@@ -1,4 +1,8 @@
-class CopyTunerInfoToTuners < ActiveRecord::Migration
+class TunerInfo < ActiveRecord::Base
+  belongs_to :tuner
+end
+
+class MoveTunerInfoToTuners < ActiveRecord::Migration
   def up
     add_column :tuners, :info, :text
     add_column :tuners, :latitude, :decimal, :precision => 6, :scale => 4
