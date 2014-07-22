@@ -1,42 +1,6 @@
 <% title "Editing #{@tuner.tuner_number}" %>
 
-<% @tuner.tuner_info.build if @tuner.tuner_info.empty? %>
-<%= form_for(@tuner) do |tuner_form| %>
-  <%= render 'shared/error_messages', :target => @tuner %>
-
-  <p>
-    <%= tuner_form.label :tuner_id %>:
-    <%= @tuner.tuner_id %>
-    <%= tuner_form.hidden_field :tuner_id %>
-  </p>
-  <p>
-    <%= tuner_form.label :tuner_number %>:
-    <%= @tuner.tuner_number %>
-    <%= tuner_form.hidden_field :tuner_number %>
-  </p>
-  <p>
-    <%= tuner_form.label :name %>:
-    <%= tuner_form.text_field :name %><br />
-  </p>
-  <%= tuner_form.fields_for @tuner.current do |info_form| %>
-    <p>
-      <%= label_tag 'update', 'Update Tuner Info' %>
-      <%= check_box_tag 'update', 'checked', false, 'data-toggle-group' => 'tuner_info_group' %><br />
-      
-      <%= info_form.label :lattitude %>
-      <%= info_form.text_field :lattitude, class: 'tuner_info_group' %><br />
-      <%= info_form.label :longitude %>
-      <%= info_form.text_field :longitude, class: 'tuner_info_group' %><br />
-      <%= info_form.label :info %><br />
-      <%= info_form.text_area :info, class: 'tuner_info_group' %><br />
-      <%= label_tag 'new', 'New Tuner Info' %>
-      <%= check_box_tag 'new', true, false, class: 'tuner_info_group' %><br />
-    </p>
-  <% end %>
-  <p>
-    <%= tuner_form.submit 'Update' %>
-  </p>
-<% end %>
+<%= render 'form' %>
 
 <%= link_to 'Show', @tuner %> |
 <%= link_to 'Back', tuners_path %>

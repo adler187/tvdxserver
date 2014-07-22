@@ -1,0 +1,30 @@
+<%= form_for(@tuner) do |tuner_form| %>
+  <%= render 'shared/error_messages', :target => @tuner %>
+  <div class="field">
+    <%= tuner_form.label :tuner_id %>
+    <%= tuner_form.text_field :tuner_id %>
+  </div>
+  <div class="field">
+    <%= tuner_form.label :tuner_number %>
+    <%= tuner_form.text_field :tuner_number %>
+  </div>
+  <div class="field">
+    <%= tuner_form.label :name %>
+    <%= tuner_form.text_field :name %>
+  </div>
+  <div class="field">
+    <%= tuner_form.label :latitude %>
+    <%= tuner_form.text_field :latitude %>
+  </div>
+  <div class="field">
+    <%= tuner_form.label :longitude %>
+    <%= tuner_form.text_field :longitude %>
+  </div>
+  <div class="field">
+    <%= tuner_form.label :info %><br />
+    <%= tuner_form.text_area :info %>
+  </div>
+  <div class="actions">
+    <%= tuner_form.submit %>
+  </div>
+<% end %>

@@ -1,5 +1,4 @@
 class TunersController < ApplicationController
-  
   before_filter :authenticate
 
   def index
@@ -20,21 +19,19 @@ class TunersController < ApplicationController
 
   def show
     id = params[:id]
-    if !id.nil?
+    unless id.nil?
       @tuner = Tuner.find(id)
+      flash[:error] = "Tuner id #{id}" if @tuner.nil?
     else
       @tuner = Tuner.where(:tuner_id => params[:tuner_id], :tuner_number => params[:tuner_number]).first
+      flash[:error] = "Tuner #{params[:tuner_id]}:#{params[:tuner_number]}" if @tuner.nil?
     end
-    
-    @tuner_info = @tuner.tuner_info.last
+        
+    redirect_to tuners_path if @tuner.nil?
     
     respond_to do |format|
       format.html
-      format.json do
-        json = @tuner.attributes
-        json[:info] = @tuner_info.attributes
-        render :json => json
-      end
+      format.json { render :json => @tuner.attributes }
     end
   end
 
@@ -48,11 +45,7 @@ class TunersController < ApplicationController
   
   def create
     tuner_params = params[:tuner]
-    info_params = tuner_params[:tuner_info]
-    tuner_params.delete(:tuner_info)
-    
     @tuner = Tuner.new(tuner_params)
-    @tuner_info = @tuner.tuner_info.build(info_params)
 
     if @tuner.save
       flash[:notice] = 'Tuner was successfully created'
@@ -65,33 +58,15 @@ class TunersController < ApplicationController
 
   def update
     @tuner = Tuner.find(params[:id])
-    info_params = params[:tuner][:tuner_info]
-    
-    params[:update] = false if params[:update].nil?
-    params[:new] = false if params[:new].nil?
-    
-    if params[:update]
-      if params[:new]
-        @tuner_info = @tuner.tuner_info.build(info_params)
-      else
-        @tuner_info = @tuner.tuner_info.last
-        @tuner_info.update_attributes(info_params)
-      end
-      
-      if !@tuner_info.save
-        flash[:error] = 'Tuner was not updated'
-        render :action => "edit" 
-      end
-    end
 
-    @tuner.update_attributes(name: params[:tuner][:name])
-    
-    if @tuner.save
-      flash[:notice] = 'Tuner was successfully updated'
-      redirect_to(@tuner)
-    else
-      flash[:error] = 'Tuner was not updated'
-      render :action => "edit" 
+    respond_to do |format|
+      if @tuner.update_attributes(params[:tuner])
+        format.html { redirect_to @tuner, notice: 'Tuner was successfully updated.' }
+        format.json { head :no_content }
+      else
+        format.html { render action: "edit" }
+        format.json { render json: @tuner.errors, status: :unprocessable_entity }
+      end
     end
   end
   

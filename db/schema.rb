@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131001030453) do
+ActiveRecord::Schema.define(:version => 20140719052817) do
 
   create_table "logs", :force => true do |t|
     t.integer  "signal_strength", :limit => 4
@@ -56,19 +56,16 @@ ActiveRecord::Schema.define(:version => 20131001030453) do
     t.integer "position"
   end
 
-  create_table "tuner_infos", :force => true do |t|
-    t.integer  "tuner_id"
-    t.text     "info"
-    t.datetime "created_at"
-    t.decimal  "lattitude",  :precision => 6, :scale => 4
-    t.decimal  "longitude",  :precision => 6, :scale => 4
-  end
-
   create_table "tuners", :force => true do |t|
-    t.string  "tuner_id",     :limit => 10
-    t.integer "tuner_number", :limit => 1
-    t.integer "position"
-    t.string  "name"
+    t.string   "tuner_id",     :limit => 10
+    t.integer  "tuner_number", :limit => 1
+    t.integer  "position"
+    t.string   "name"
+    t.text     "info"
+    t.decimal  "latitude",                   :precision => 6, :scale => 4
+    t.decimal  "longitude",                  :precision => 6, :scale => 4
+    t.datetime "created_at"
+    t.datetime "updated_at"
   end
 
 end
